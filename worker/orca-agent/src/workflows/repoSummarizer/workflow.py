@@ -9,9 +9,14 @@ from prometheus_swarm.workflows.utils import (
     check_required_env_vars,
     cleanup_repository,
     validate_github_auth,
-    setup_repository
+    setup_repository,
 )
 from src.workflows.repoSummarizer.prompts import PROMPTS
+from src.workflows.repoSummarizer.docs_sections import (
+    DOCS_SECTIONS,
+    INITIAL_SECTIONS,
+    FINAL_SECTIONS,
+)
 
 
 class Task:
@@ -81,7 +86,11 @@ class RepoSummarizerWorkflow(Workflow):
             self.context["base"] = "main"
 
         # Set up repository directory
-        setup_result = setup_repository(self.context["repo_url"], github_token=os.getenv("GITHUB_TOKEN"), github_username=os.getenv("GITHUB_USERNAME"))
+        setup_result = setup_repository(
+            self.context["repo_url"],
+            github_token=os.getenv("GITHUB_TOKEN"),
+            github_username=os.getenv("GITHUB_USERNAME"),
+        )
         if not setup_result["success"]:
             raise Exception(f"Failed to set up repository: {setup_result['message']}")
         self.context["github_token"] = os.getenv("GITHUB_TOKEN")
@@ -145,7 +154,7 @@ class RepoSummarizerWorkflow(Workflow):
             }
 
         # Get prompt name for README generation
-        prompt_name = repo_classification_result["data"].get("prompt_name")
+        prompt_name = repo_classification_result["data"].get("repo_type")
         if not prompt_name:
             log_error(
                 Exception("No prompt name returned from repository classification"),
@@ -163,7 +172,9 @@ class RepoSummarizerWorkflow(Workflow):
                 prompt_name = "other"
             readme_result = self.generate_readme_file(prompt_name)
             if not readme_result or not readme_result.get("success"):
-                log_error(Exception("README generation failed"), "README generation failed")
+                log_error(
+                    Exception("README generation failed"), "README generation failed"
+                )
                 return {
                     "success": False,
                     "message": "README generation failed",
@@ -179,15 +190,17 @@ class RepoSummarizerWorkflow(Workflow):
                         "data": None,
                     }
                 log_key_value("README review result", review_result.get("data"))
-                if review_result.get("success") and review_result.get("data").get("recommendation") == "APPROVE":
+                if (
+                    review_result.get("success")
+                    and review_result.get("data").get("recommendation") == "APPROVE"
+                ):
                     result = self.create_pull_request()
                     return result
                 else:
-                    self.context["previous_review_comments_section"] = PROMPTS["previous_review_comments"] + review_result.get("data").get("comment")
+                    self.context["previous_review_comments_section"] = PROMPTS[
+                        "previous_review_comments"
+                    ] + review_result.get("data").get("comment")
 
-
-       
-        
         return {
             "success": False,
             "message": "README Review Exceed Max Attempts",
@@ -206,6 +219,7 @@ class RepoSummarizerWorkflow(Workflow):
                 "message": f"Repository classification workflow failed: {str(e)}",
                 "data": None,
             }
+
     def review_readme_file(self, readme_result):
         """Execute the issue generation workflow."""
         try:
@@ -220,16 +234,20 @@ class RepoSummarizerWorkflow(Workflow):
                 "data": None,
             }
 
-    def generate_readme_file(self, prompt_name):
-        """Execute the issue generation workflow."""
+    def generate_readme_section(self, section):
+        """Create the subsections of the README file."""
+
+        self.context["section_name"] = section["name"]
+        self.context["section_description"] = section["description"]
+
         try:
 
             # ==================== Generate README file ====================
-            log_section("GENERATING README FILE")
-            generate_readme_file_phase = phases.ReadmeGenerationPhase(
-                workflow=self, prompt_name=prompt_name
+            log_section("GENERATING README SECTION")
+            generate_readme_section_phase = phases.ReadmeSectionGenerationPhase(
+                workflow=self
             )
-            readme_result = generate_readme_file_phase.execute()
+            readme_result = generate_readme_section_phase.execute()
 
             # Check README Generation Result
             if not readme_result or not readme_result.get("success"):
@@ -249,13 +267,66 @@ class RepoSummarizerWorkflow(Workflow):
                 "data": None,
             }
 
+    def generate_readme_file(self, repo_type):
+        """Generate the README file."""
+
+        readme_sections_spec = (
+            list(INITIAL_SECTIONS)
+            + list(DOCS_SECTIONS[repo_type])
+            + list(FINAL_SECTIONS)
+        )
+
+        self.context["repo_type"] = repo_type
+        self.context["all_sections"] = ", ".join(
+            [section["name"] for section in readme_sections_spec]
+        )
+        try:
+            readme_sections = []
+            for section in readme_sections_spec:
+                readme_result = self.generate_readme_section(section)
+                print("README RESULT", readme_result)
+                if not readme_result or not readme_result.get("success"):
+                    log_error(
+                        Exception(readme_result.get("error", "No result")),
+                        "Readme file generation failed",
+                    )
+                    return None
+
+                readme_section_content = readme_result.get("data", {}).get(
+                    "section_content"
+                )
+                if readme_section_content:
+                    readme_section_title = readme_result.get("data", {}).get(
+                        "section_name"
+                    )
+
+                    readme_section = (
+                        f"## {readme_section_title}\n\n" f"{readme_section_content}"
+                    )
+                    readme_sections.append(readme_section)
+
+            self.context["readme_content"] = "\n\n".join(readme_sections)
+
+            generate_readme_file_phase = phases.ReadmeFileCreationPhase(workflow=self)
+            return generate_readme_file_phase.execute()
+
+        except Exception as e:
+            log_error(e, "Readme file generation workflow failed")
+            return {
+                "success": False,
+                "message": f"Readme file generation workflow failed: {str(e)}",
+                "data": None,
+            }
+
     def create_pull_request(self):
         """Create a pull request for the README file."""
         try:
             log_section("CREATING PULL REQUEST")
 
             # Add required PR title and description parameters to context
-            self.context["title"] = f"Prometheus: Add README for {self.context['repo_name']}"
+            self.context["title"] = (
+                f"Prometheus: Add README for {self.context['repo_name']}"
+            )
             self.context["description"] = (
                 f"This PR adds a README file for the {self.context['repo_name']} repository."
             )

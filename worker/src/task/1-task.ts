@@ -1,7 +1,6 @@
 import { getOrcaClient } from "@_koii/task-manager/extensions";
 import { namespaceWrapper, TASK_ID } from "@_koii/namespace-wrapper";
 import "dotenv/config";
-import { getRandomNodes } from "../utils/leader";
 import { getExistingIssues } from "../utils/existingIssues";
 import { status, middleServerUrl } from "../utils/constant";
 import dotenv from "dotenv";
@@ -12,7 +11,6 @@ import { actionMessage } from "../utils/constant";
 import { errorMessage } from "../utils/constant";
 dotenv.config();
 
-
 export async function task(roundNumber: number): Promise<void> {
   /**
    * Run your task and store the proofs to be submitted for auditing
@@ -20,46 +18,68 @@ export async function task(roundNumber: number): Promise<void> {
    * The submission of the proofs is done in the submission function
    */
   // FORCE TO PAUSE 30 SECONDS
-// No submission on Round 0 so no need to trigger fetch audit result before round 3
-// Changed from 3 to 4 to have more time
+  // No submission on Round 0 so no need to trigger fetch audit result before round 3
+  // Changed from 3 to 4 to have more time
   if (roundNumber >= 4) {
-    const triggerFetchAuditResult = await fetch(`${middleServerUrl}/api/builder/summarizer/trigger-fetch-audit-result`, {
+    const triggerFetchAuditResult = await fetch(`${middleServerUrl}/summarizer/worker/update-audit-result`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify({ taskId: TASK_ID, round: roundNumber - 4 })
+      body: JSON.stringify({ taskId: TASK_ID, round: roundNumber - 4 }),
     });
-    console.log(`[TASK] Trigger fetch audit result for round ${roundNumber - 3}. Result is ${triggerFetchAuditResult.status}.`);
+    console.log(
+      `[TASK] Trigger fetch audit result for round ${roundNumber - 3}. Result is ${triggerFetchAuditResult.status}.`,
+    );
   }
   console.log(`[TASK] EXECUTE TASK FOR ROUND ${roundNumber}`);
   try {
     const orcaClient = await getOrcaClient();
     // check if the env variable is valid
     if (!process.env.ANTHROPIC_API_KEY) {
-      await namespaceWrapper.logMessage(LogLevel.Error, errorMessage.ANTHROPIC_API_KEY_INVALID, actionMessage.ANTHROPIC_API_KEY_INVALID);
+      await namespaceWrapper.logMessage(
+        LogLevel.Error,
+        errorMessage.ANTHROPIC_API_KEY_INVALID,
+        actionMessage.ANTHROPIC_API_KEY_INVALID,
+      );
       await namespaceWrapper.storeSet(`result-${roundNumber}`, status.ANTHROPIC_API_KEY_INVALID);
       return;
     }
     if (!isValidAnthropicApiKey(process.env.ANTHROPIC_API_KEY!)) {
-      await namespaceWrapper.logMessage(LogLevel.Error, errorMessage.ANTHROPIC_API_KEY_INVALID, actionMessage.ANTHROPIC_API_KEY_INVALID);
+      await namespaceWrapper.logMessage(
+        LogLevel.Error,
+        errorMessage.ANTHROPIC_API_KEY_INVALID,
+        actionMessage.ANTHROPIC_API_KEY_INVALID,
+      );
       await namespaceWrapper.storeSet(`result-${roundNumber}`, status.ANTHROPIC_API_KEY_INVALID);
       return;
     }
     const isAnthropicAPIKeyValid = await checkAnthropicAPIKey(process.env.ANTHROPIC_API_KEY!);
     if (!isAnthropicAPIKeyValid) {
-      await namespaceWrapper.logMessage(LogLevel.Error, errorMessage.ANTHROPIC_API_KEY_NO_CREDIT, actionMessage.ANTHROPIC_API_KEY_NO_CREDIT);
+      await namespaceWrapper.logMessage(
+        LogLevel.Error,
+        errorMessage.ANTHROPIC_API_KEY_NO_CREDIT,
+        actionMessage.ANTHROPIC_API_KEY_NO_CREDIT,
+      );
       await namespaceWrapper.storeSet(`result-${roundNumber}`, status.ANTHROPIC_API_KEY_NO_CREDIT);
       return;
     }
     if (!process.env.GITHUB_USERNAME || !process.env.GITHUB_TOKEN) {
-      await namespaceWrapper.logMessage(LogLevel.Error, errorMessage.GITHUB_CHECK_FAILED, actionMessage.GITHUB_CHECK_FAILED);
+      await namespaceWrapper.logMessage(
+        LogLevel.Error,
+        errorMessage.GITHUB_CHECK_FAILED,
+        actionMessage.GITHUB_CHECK_FAILED,
+      );
       await namespaceWrapper.storeSet(`result-${roundNumber}`, status.GITHUB_CHECK_FAILED);
       return;
     }
     const isGitHubValid = await checkGitHub(process.env.GITHUB_USERNAME!, process.env.GITHUB_TOKEN!);
     if (!isGitHubValid) {
-      await namespaceWrapper.logMessage(LogLevel.Error, errorMessage.GITHUB_CHECK_FAILED, actionMessage.GITHUB_CHECK_FAILED);
+      await namespaceWrapper.logMessage(
+        LogLevel.Error,
+        errorMessage.GITHUB_CHECK_FAILED,
+        actionMessage.GITHUB_CHECK_FAILED,
+      );
       await namespaceWrapper.storeSet(`result-${roundNumber}`, status.GITHUB_CHECK_FAILED);
       return;
     }
@@ -78,31 +98,16 @@ export async function task(roundNumber: number): Promise<void> {
     if (!pubKey) {
       throw new Error("No public key found");
     }
-    /****************** All issues need to be starred ******************/
 
-    const existingIssues = await getExistingIssues();
-    const githubUrls = existingIssues.map((issue) => issue.githubUrl);
-    try {
-      await orcaClient.podCall(`star/${roundNumber}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ taskId: TASK_ID, round_number: String(roundNumber), github_urls: githubUrls }),
-      });
-    } catch (error) {
-      await namespaceWrapper.storeSet(`result-${roundNumber}`, status.STAR_ISSUE_FAILED);
-      console.error("Error starring issues:", error);
-    }
     /****************** All these issues need to be generate a markdown file ******************/
 
     const signature = await namespaceWrapper.payloadSigning(
       {
         taskId: TASK_ID,
         roundNumber: roundNumber,
-        action: "fetch",
+        action: "fetch-todo",
         githubUsername: stakingKey,
-        stakingKey: stakingKey
+        stakingKey: stakingKey,
       },
       stakingKeypair.secretKey,
     );
@@ -110,10 +115,10 @@ export async function task(roundNumber: number): Promise<void> {
     // const initializedDocumentSummarizeIssues = await getInitializedDocumentSummarizeIssues(existingIssues);
 
     console.log(`[TASK] Making Request to Middle Server with taskId: ${TASK_ID} and round: ${roundNumber}`);
-    const requiredWorkResponse = await fetch(`${middleServerUrl}/api/builder/summarizer/fetch-summarizer-todo`, {
+    const requiredWorkResponse = await fetch(`${middleServerUrl}/summarizer/worker/fetch-todo`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({ signature: signature, stakingKey: stakingKey }),
     });
@@ -132,7 +137,7 @@ export async function task(roundNumber: number): Promise<void> {
     };
     console.log("[TASK] jsonBody: ", jsonBody);
     try {
-      const repoSummaryResponse = await orcaClient.podCall(`repo_summary/${roundNumber}`, {
+      const repoSummaryResponse = await orcaClient.podCall(`worker-task/${roundNumber}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -143,20 +148,17 @@ export async function task(roundNumber: number): Promise<void> {
       console.log("[TASK] repoSummaryResponse.data.result.data ", repoSummaryResponse.data.result.data);
       const payload = {
         taskId: TASK_ID,
-        action: "add",
+        action: "add-todo-pr",
         roundNumber: roundNumber,
         prUrl: repoSummaryResponse.data.result.data.pr_url,
-        stakingKey: stakingKey
-      }
+        stakingKey: stakingKey,
+      };
       console.log("[TASK] Signing payload: ", payload);
       if (repoSummaryResponse.status === 200) {
-        try{
-          const signature = await namespaceWrapper.payloadSigning(
-            payload,
-            stakingKeypair.secretKey,
-          );
+        try {
+          const signature = await namespaceWrapper.payloadSigning(payload, stakingKeypair.secretKey);
           console.log("[TASK] signature: ", signature);
-          const addPrToSummarizerTodoResponse = await fetch(`${middleServerUrl}/api/builder/summarizer/add-pr-to-summarizer-todo`, {
+          const addPrToSummarizerTodoResponse = await fetch(`${middleServerUrl}/summarizer/worker/add-todo-pr`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -164,7 +166,7 @@ export async function task(roundNumber: number): Promise<void> {
             body: JSON.stringify({ signature: signature, stakingKey: stakingKey }),
           });
           console.log("[TASK] addPrToSummarizerTodoResponse: ", addPrToSummarizerTodoResponse);
-        }catch(error){
+        } catch (error) {
           await namespaceWrapper.storeSet(`result-${roundNumber}`, status.ISSUE_FAILED_TO_ADD_PR_TO_SUMMARIZER_TODO);
           console.error("[TASK] Error adding PR to summarizer todo:", error);
         }

@@ -3,9 +3,6 @@
 from prometheus_swarm.workflows.base import WorkflowPhase, Workflow
 
 
-
-
-
 class BranchCreationPhase(WorkflowPhase):
     def __init__(self, workflow: Workflow, conversation_id: str = None):
         super().__init__(
@@ -24,24 +21,33 @@ class RepoClassificationPhase(WorkflowPhase):
             prompt_name="classify_repository",
             available_tools=["read_file", "list_files", "classify_repository"],
             conversation_id=conversation_id,
-            name="Repository Classificati on",
+            name="Repository Classification",
         )
 
 
-class ReadmeGenerationPhase(WorkflowPhase):
-    def __init__(
-        self, workflow: Workflow, conversation_id: str = None, prompt_name: str = None
-    ):
+class ReadmeSectionGenerationPhase(WorkflowPhase):
+    def __init__(self, workflow: Workflow, conversation_id: str = None):
         super().__init__(
             workflow=workflow,
-            prompt_name=prompt_name,
+            prompt_name="generate_readme_section",
             available_tools=[
                 "read_file",
                 "list_files",
-                "write_file",
+                "create_readme_section",
             ],
             conversation_id=conversation_id,
-            name="Readme Generation",
+            name="Readme Section Generation",
+        )
+
+
+class ReadmeFileCreationPhase(WorkflowPhase):
+    def __init__(self, workflow: Workflow, conversation_id: str = None):
+        super().__init__(
+            workflow=workflow,
+            prompt_name="generate_readme",
+            required_tool="create_readme_file",
+            conversation_id=conversation_id,
+            name="Readme File Creation",
         )
 
 
