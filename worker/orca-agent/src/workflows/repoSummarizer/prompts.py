@@ -11,7 +11,8 @@ PROMPTS = {
         "Create a new branch with a descriptive name related to creating a README file.\n"
     ),
     "classify_repository": (
-        "Analyze the repository structure and identify the type of repository this is.\n"
+        "A repository has been cloned locally for you. All files can be accessed relative to the current directory.\n"
+        "Analyze the structure and identify the type of repository this is.\n"
         "Use the `classify_repository` tool to report your choice.\n"
         "You must choose one of the following repository types:\n"
         "- Library/SDK: Code meant to be imported and used by other developers\n"
@@ -48,9 +49,10 @@ PROMPTS = {
         "The section should include the following information:\n"
         "{section_description}\n"
         "Write the section in markdown format.\n"
-        "The section name will be automatically added as a second level heading.\n"
-        "Do not include the section name in your documentation.\n"
-        "Any sub-sections should be added as third level headings.\n"
+        "The section name will be automatically added as a second level heading. "
+        "DO NOT include it in your documentation. DO NOT include any second level headings.\n"
+        "Any sub-sections you would like to add should be THIRD level headings or LOWER. "
+        "Follow the proper hierarchy when choosing a heading level.\n"
         "IMPORTANT: DO NOT assume that any existing documentation is correct. It may be inaccurate or outdated.\n"
         "Create the documentation based SOLELY on the files actually present in the codebase.\n"
         "EXTREMELY IMPORTANT: If files are mentioned in the README but are not present in the codebase, "
@@ -63,7 +65,9 @@ PROMPTS = {
         "The content will be added automatically, your job is just to create a good title."
     ),
     "create_pr": (
-        "You are creating a pull request for the documentation you have generated:\n"
+        "You are creating a pull request for the documentation you have generated. "
+        "The repository has been cloned to the current directory.\n"
+        "Use the `create_pull_request_legacy` tool to create the pull request.\n"
         "IMPORTANT: Always use relative paths (e.g., 'src/file.py' not '/src/file.py')\n\n"
         "Steps to create the pull request:\n"
         "1. First examine the available files to understand the implementation\n"
@@ -81,7 +85,7 @@ PROMPTS = {
         "2. Does it correctly explain the repository's purpose, features, and functionality?\n"
         "3. Is it comprehensive enough to help users understand and use the repository?\n"
         "4. Does it follow best practices for README documentation?\n\n"
-        "Use the validate_implementation tool to submit your findings.\n"
+        "Use the `review_readme_file` tool to submit your findings.\n"
         "IMPORTANT: Do not assume that an existing README is correct. "
         "Evaluate README_Prometheus.md against the codebase.\n"
         "DO NOT consider the filename in your analysis, only the content.\n"
