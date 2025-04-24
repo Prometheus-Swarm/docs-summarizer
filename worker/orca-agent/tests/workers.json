@@ -2,8 +2,7 @@
   "worker1": {
     "env_vars": {
       "GITHUB_TOKEN": "WORKER1_GITHUB_TOKEN",
-      "GITHUB_USERNAME": "WORKER1_GITHUB_USERNAME",
-      "ANTHROPIC_API_KEY": "WORKER1_ANTHROPIC_API_KEY"
+      "GITHUB_USERNAME": "WORKER1_GITHUB_USERNAME"
     },
     "keypairs": {
       "staking": "WORKER1_STAKING_KEYPAIR",
@@ -13,8 +12,7 @@
   "worker2": {
     "env_vars": {
       "GITHUB_TOKEN": "WORKER2_GITHUB_TOKEN",
-      "GITHUB_USERNAME": "WORKER2_GITHUB_USERNAME",
-      "ANTHROPIC_API_KEY": "WORKER2_ANTHROPIC_API_KEY"
+      "GITHUB_USERNAME": "WORKER2_GITHUB_USERNAME"
     },
     "keypairs": {
       "staking": "WORKER2_STAKING_KEYPAIR",
