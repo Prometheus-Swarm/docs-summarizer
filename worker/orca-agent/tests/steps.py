@@ -5,9 +5,11 @@ from functools import partial
 from .stages import (
     worker_fetch,
     worker_task,
+    worker_pr,
     worker_submission,
+    worker_check,
     worker_audit,
-    audit_results,
+    update_audit,
 )
 
 
@@ -27,10 +29,24 @@ steps = [
         worker="worker1",
     ),
     TestStep(
+        name="worker_pr",
+        description="Add PR to worker",
+        prepare=worker_pr.prepare,
+        execute=worker_pr.execute,
+        worker="worker1",
+    ),
+    TestStep(
         name="worker_submission",
         description="Submit worker task",
         prepare=worker_submission.prepare,
         execute=worker_submission.execute,
+        worker="worker1",
+    ),
+    TestStep(
+        name="worker_check",
+        description="Check worker task",
+        prepare=worker_check.prepare,
+        execute=worker_check.execute,
         worker="worker1",
     ),
     TestStep(
@@ -41,10 +57,10 @@ steps = [
         worker="worker2",
     ),
     TestStep(
-        name="audit_results",
+        name="update_audit",
         description="Update audit results",
-        prepare=partial(audit_results.prepare, role="worker"),
-        execute=audit_results.execute,
+        prepare=partial(update_audit.prepare, role="worker"),
+        execute=update_audit.execute,
         worker="worker1",
     ),
 ]
