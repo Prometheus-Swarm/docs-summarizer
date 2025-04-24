@@ -19,24 +19,24 @@ def execute(runner, worker, data):
         print(f"✓ No repo url found for {worker.name} - continuing")
         return {"success": True, "message": "No repo url found"}
 
-    url = f"{worker.url}/worker-task/{data['roundNumber']}"
+    url = f"{worker.url}/worker-task/{runner.current_round}"
     response = requests.post(url, json=data)
     result = response.json()
 
     # Handle 409 gracefully - no eligible todos is an expected case
-    if response.status_code in [401, 409]:
+    if response.status_code == 409:
         print(
             f"✓ {result.get('message', 'No eligible todos')} for {worker.name} - continuing"
         )
         return {"success": True, "message": result.get("message")}
 
-    if result.get("success") and "pr_url" in result:
+    if result.get("success") and "pr_url" in result["result"]["data"]:
         round_key = str(runner.current_round)
         round_state = runner.state["rounds"].setdefault(round_key, {})
 
         # Initialize pr_urls if not exists
         if "pr_urls" not in round_state:
             round_state["pr_urls"] = {}
-        round_state["pr_urls"][worker.name] = result["pr_url"]
+        round_state["pr_urls"][worker.name] = result["result"]["data"]["pr_url"]
 
     return result

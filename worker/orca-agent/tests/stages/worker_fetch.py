@@ -46,7 +46,7 @@ def execute(runner, worker, data):
 
     if result.get("success"):
         runner.state["repo_url"] = (
-            f"https://github.com/{result['repo_owner']}/{result['repo_name']}"
+            f"https://github.com/{result['data']['repo_owner']}/{result['data']['repo_name']}"
         )
 
     return result
