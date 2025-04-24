@@ -33,9 +33,4 @@ def execute(runner, worker, data):
     else:
         response.raise_for_status()
 
-    if result.get("success"):
-        runner.state["repo_url"] = (
-            f"https://github.com/{result['repo_owner']}/{result['repo_name']}"
-        )
-
     return result
