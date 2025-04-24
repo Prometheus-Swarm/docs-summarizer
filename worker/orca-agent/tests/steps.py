@@ -3,6 +3,7 @@
 from prometheus_test import TestStep
 from functools import partial
 from .stages import (
+    worker_fetch,
     worker_task,
     worker_submission,
     worker_audit,
@@ -12,11 +13,18 @@ from .stages import (
 
 steps = [
     TestStep(
+        name="worker_fetch",
+        description="Fetch worker task",
+        prepare=worker_fetch.prepare,
+        execute=worker_fetch.execute,
+        worker="worker1",
+    ),
+    TestStep(
         name="worker_task",
         description="Execute worker task",
         prepare=worker_task.prepare,
         execute=worker_task.execute,
-        worker="worker",
+        worker="worker1",
     ),
     TestStep(
         name="worker_submission",
