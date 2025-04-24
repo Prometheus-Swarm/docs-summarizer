@@ -39,22 +39,4 @@ def execute(runner, worker, data):
             round_state["pr_urls"] = {}
         round_state["pr_urls"][worker.name] = result["pr_url"]
 
-        # Initialize submission_data if not exists
-        # if "submission_data" not in round_state:
-        #     round_state["submission_data"] = {}
-
-        # Store submission data
-        # round_state["submission_data"][worker.name] = {
-        #     "githubUsername": worker.env.get("GITHUB_USERNAME"),
-        #     "nodeType": "worker",
-        #     "prUrl": result["pr_url"],
-        #     "repoName": result.get("repoName"),
-        #     "repoOwner": result.get("repoOwner"),
-        #     "roundNumber": runner.current_round,
-        #     "taskId": runner.config.task_id,
-        #     "uuid": result.get("uuid"),  # Should be provided by the worker
-        #     "stakingKey": worker.staking_public_key,
-        #     "pubKey": worker.public_key,
-        # }
-
     return result
