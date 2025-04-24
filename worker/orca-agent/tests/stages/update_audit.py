@@ -3,7 +3,7 @@
 import requests
 
 
-def prepare(runner, worker):
+def prepare(runner, worker, role: str):
     """Prepare data for worker task"""
 
     return {
