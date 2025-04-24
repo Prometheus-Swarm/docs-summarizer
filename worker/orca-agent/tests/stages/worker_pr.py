@@ -4,6 +4,11 @@ from prometheus_test.utils import create_signature
 
 def prepare(runner, worker):
     round_state = runner.state["rounds"][str(runner.current_round)]
+
+    if worker.name not in round_state["pr_urls"]:
+        print(f"✓ No PR URL found for {worker.name} - continuing")
+        return None
+
     payload = {
         "taskId": runner.config.task_id,
         "action": "add-todo-pr",
@@ -20,9 +25,9 @@ def prepare(runner, worker):
 
 def execute(runner, worker, data):
     """Add worker PR URL to middle server"""
-    if not runner.state["pr_url"]:
-        print(f"✓ No PR URL found for {worker.name} - continuing")
-        return {"success": True, "message": "No PR URL found"}
+
+    if data is None:
+        return {"success": True, "message": "Skipped due to missing PR URL"}
 
     url = f"{runner.config.middle_server_url}/summarizer/worker/add-todo-pr"
     response = requests.post(
