@@ -1,5 +1,5 @@
 # Test Configuration
-task_id: "62n2aAVVV42rtt53wxieotTdnKpTRjiChsHYdSxHDhAZ" # Task ID from config-task.yml
+task_id: "1111" # Task ID from config-task.yml
 middle_server_url: "http://localhost:3000"
 # base_port: 5000 # Base port for worker servers
 # max_rounds: 1 # Maximum number of test rounds
