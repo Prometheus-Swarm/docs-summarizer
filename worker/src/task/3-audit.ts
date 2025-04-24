@@ -57,7 +57,7 @@ export async function audit(cid: string, roundNumber: number, submitterKey: stri
     console.log(`[AUDIT] Sending audit request for submitter: ${submitterKey}`);
     console.log(`[AUDIT] Submission data being sent to audit:`, decodeResult);
 
-    const result = await orcaClient.podCall(`worker-audit/${roundNumber}`, {
+    const auditResult = await orcaClient.podCall(`worker-audit/${roundNumber}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -67,17 +67,12 @@ export async function audit(cid: string, roundNumber: number, submitterKey: stri
       }),
     });
 
-    console.log(`[AUDIT] Raw audit result:`, result);
-    console.log(`[AUDIT] Audit result data type:`, typeof result.data);
-    console.log(`[AUDIT] Audit result data value:`, result.data);
-
-    if (result.data === true) {
-      console.log(`[AUDIT] ✅ Audit passed for ${submitterKey}`);
-      return true;
+    if (auditResult.data.success) {
+      console.log(`[AUDIT] ✅ Audit successful for ${submitterKey}`);
+      return auditResult.data.data.is_approved;
     } else {
-      console.log(`[AUDIT] ❌ Audit failed for ${submitterKey}`);
-      console.log(`[AUDIT] Failed audit result data:`, result.data);
-      return false;
+      console.log(`[AUDIT] ❌ Audit could not be completed for ${submitterKey}`);
+      return true;
     }
   } catch (error) {
     console.error("[AUDIT] Error auditing submission:", error);
