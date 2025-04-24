@@ -1,11 +1,9 @@
 """Database models."""
 
-from datetime import datetime
-from typing import Optional, List
-from sqlmodel import SQLModel, Field, Relationship
+from typing import Optional
+from sqlmodel import SQLModel, Field
 from sqlalchemy import JSON
 from sqlalchemy import Column
-from prometheus_swarm.database.models import Conversation, Message, Log
 
 
 class Submission(SQLModel, table=True):
