@@ -1,15 +1,4 @@
 {
-  "leader": {
-    "env_vars": {
-      "GITHUB_TOKEN": "LEADER_GITHUB_TOKEN",
-      "GITHUB_USERNAME": "LEADER_GITHUB_USERNAME",
-      "ANTHROPIC_API_KEY": "LEADER_ANTHROPIC_API_KEY"
-    },
-    "keypairs": {
-      "staking": "LEADER_STAKING_KEYPAIR",
-      "public": "LEADER_PUBLIC_KEYPAIR"
-    }
-  },
   "worker1": {
     "env_vars": {
       "GITHUB_TOKEN": "WORKER1_GITHUB_TOKEN",

@@ -13,14 +13,8 @@ data_dir: data/minimal # Directory containing test data
 mongodb:
   database: summarizer
   collections:
-    docs:
-      data_file: docs.json # Relative to data_dir
-      required_count: 1 # Minimum number of documents required
-    summaries:
-      data_file: summaries.json
-      required_count: 1
-    systemprompts:
-      data_file: prompts.json
+    documentations:
+      data_file: documentations.json
       required_count: 1
     audits:
       required_count: 0 # No data file, just needs to exist
