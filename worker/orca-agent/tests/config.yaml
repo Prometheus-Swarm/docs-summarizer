@@ -11,7 +11,7 @@ data_dir: data/minimal # Directory containing test data
 
 # MongoDB Configuration
 mongodb:
-  database: summarizer
+  database: builder247
   collections:
     documentations:
       data_file: documentations.json
