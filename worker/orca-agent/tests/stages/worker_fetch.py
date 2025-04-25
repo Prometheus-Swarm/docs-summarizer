@@ -45,7 +45,8 @@ def execute(runner, worker, data):
         response.raise_for_status()
 
     if result.get("success"):
-        round_state = runner.state["rounds"][runner.current_round]
+        round_key = str(runner.current_round)
+        round_state = runner.state["rounds"].setdefault(round_key, {})
         round_state["repo_url"] = (
             f"https://github.com/{result['data']['repo_owner']}/{result['data']['repo_name']}"
         )

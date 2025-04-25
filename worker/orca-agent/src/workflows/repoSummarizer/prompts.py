@@ -76,7 +76,7 @@ PROMPTS = {
         "   - The main features and value of the documentation\n"
     ),
     "review_readme_file": (
-        "Review the README_Prometheus.md (NOT the README.md file) in the repository and evaluate its quality and "
+        "Review the README_Prometheus.md in the repository and evaluate its quality and "
         "relevance to the repository.\n\n"
         "Please analyze:\n"
         "1. Is the README_Prometheus.md file related to this specific repository? (Does it describe the actual code "

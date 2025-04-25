@@ -6,24 +6,19 @@ PROMPTS = {
         "repositories into comprehensive documentation. You excel at analyzing codebases "
         "and creating clear, structured documentation."
     ),
-    
     "check_readme_file": (
-        "A pull request has been checked out for you. The repository is {repo_owner}/{repo_name} and "
-        "the PR number is {pr_number}. The following files are available:\n"
-        "{current_files}\n\n"
-        "The criteria for the README file are:\n"
-        "1. Project Overview\n"
-        "   - Purpose and main functionality\n"
-        "   - Key features\n"
-        "2. Repository Structure\n"
-        "   - Detailed breakdown of directories and their purposes\n"
-        "   - Key files and their roles\n"
-        "3. Technical Details\n"
-        "   - Technologies used\n"
-        "   - Architecture overview\n"
-        "4. File Contents\n"
-        "   - Specific description of each significant file\n\n"
-        "Please review the README file and give feedback.\n"
+        "A pull request has been checked out for you. Review the file README_Prometheus.md in the repository "
+        "and evaluate its quality and relevance to the repository.\n\n"
+        "Please analyze:\n"
+        "1. Is the README_Prometheus.md file related to this specific repository? (Does it describe the actual code "
+        "and purpose of this repo?)\n"
+        "2. Does it correctly explain the repository's purpose, features, and functionality?\n"
+        "3. Is it comprehensive enough to help users understand and use the repository?\n"
+        "4. Does it follow best practices for README documentation?\n\n"
+        "Use the `review_readme_file` tool to submit your findings.\n"
+        "IMPORTANT: Do not assume that an existing README is correct. "
+        "Evaluate README_Prometheus.md against the codebase.\n"
+        "DO NOT consider the filename in your analysis, only the content.\n"
+        "STOP after submitting the review report."
     ),
-
 }
