@@ -12,7 +12,6 @@ from prometheus_swarm.workflows.utils import (
     cleanup_repository,
     get_current_files,
 )
-from git import Repo
 
 
 class Task:
@@ -70,12 +69,18 @@ class repoSummarizerAuditWorkflow(Workflow):
         # Check required environment variables and validate GitHub auth
         check_required_env_vars(["GITHUB_TOKEN", "GITHUB_USERNAME"])
         validate_github_auth(os.getenv("GITHUB_TOKEN"), os.getenv("GITHUB_USERNAME"))
-        self.context["repo_url"] = f"https://github.com/{self.context['repo_owner']}/{self.context['repo_name']}"
+        self.context["repo_url"] = (
+            f"https://github.com/{self.context['repo_owner']}/{self.context['repo_name']}"
+        )
         # Set up repository directory
-        setup_result = setup_repository(self.context["repo_url"], github_token=os.getenv("GITHUB_TOKEN"), github_username=os.getenv("GITHUB_USERNAME"))
+        setup_result = setup_repository(
+            self.context["repo_url"],
+            github_token=os.getenv("GITHUB_TOKEN"),
+            github_username=os.getenv("GITHUB_USERNAME"),
+        )
         if not setup_result["success"]:
             raise Exception(f"Failed to set up repository: {setup_result['message']}")
-            
+
         self.context["repo_path"] = setup_result["data"]["clone_path"]
         self.original_dir = setup_result["data"]["original_dir"]
         self.context["fork_url"] = setup_result["data"]["fork_url"]
@@ -85,9 +90,7 @@ class repoSummarizerAuditWorkflow(Workflow):
         # Enter repo directory
         os.chdir(self.context["repo_path"])
         gh = Github(self.context["github_token"])
-        repo = gh.get_repo(
-            f"{self.context['repo_owner']}/{self.context['repo_name']}"
-        )
+        repo = gh.get_repo(f"{self.context['repo_owner']}/{self.context['repo_name']}")
         pr = repo.get_pull(self.context["pr_number"])
         self.context["pr"] = pr
         # Add remote for PR's repository and fetch the branch
