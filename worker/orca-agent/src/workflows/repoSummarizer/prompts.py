@@ -57,6 +57,7 @@ PROMPTS = {
         "Create the documentation based SOLELY on the files actually present in the codebase.\n"
         "EXTREMELY IMPORTANT: If files are mentioned in the README but are not present in the codebase, "
         "do NOT mention them in your documentation. They do not exist and are not relevant.\n"
+        "This is a public facing document, so DO NOTinclude any instructions or suggestions to the developer.\n"
     ),
     "generate_readme": (
         "Create a descriptive title for the following README contents and create the README file:\n"
