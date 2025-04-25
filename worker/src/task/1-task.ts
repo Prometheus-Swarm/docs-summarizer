@@ -207,7 +207,7 @@ export async function task(roundNumber: number): Promise<void> {
       // }catch(error){
       //   console.error("[TASK] Error posting to slack:", error);
       // }
-      console.error("[TASK] EXECUTE TASK ERROR:", error);
+      console.error("[TASK] EXECUTE TASK ERROR:", JSON.stringify(error));
     }
   } catch (error) {
     await namespaceWrapper.storeSet(`result-${roundNumber}`, status.UNKNOWN_ERROR);
