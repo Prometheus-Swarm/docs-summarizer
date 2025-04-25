@@ -21,10 +21,6 @@ DOCS_SECTIONS = {
             "Include relevant deployment commands and target platforms (e.g., Vercel, Netlify, Docker)\n\n",
         },
         {
-            "name": "Technologies Used",
-            "description": "List the main frameworks, libraries, and tools (e.g., React, Vue, Vite, Tailwind)\n\n",
-        },
-        {
             "name": "Feature Highlights",
             "description": "Describe core user-facing features or flows "
             "(e.g., authentication, dashboards, routing)\n\n",
@@ -51,10 +47,6 @@ DOCS_SECTIONS = {
             "Include example headers or auth flow steps if needed\n\n",
         },
         {
-            "name": "Technologies Used",
-            "description": "List major frameworks, libraries, or tools (e.g., Express, FastAPI, Prisma)\n\n",
-        },
-        {
             "name": "Deployment",
             "description": "Describe how to deploy the service (e.g., Docker, CI/CD, cloud platforms)\n"
             "Include environment config or scaling considerations if relevant\n\n",
@@ -70,10 +62,6 @@ DOCS_SECTIONS = {
             "name": "Running the App",
             "description": "Show commands to run the app on a simulator/emulator or real device\n"
             "Include platform-specific commands if needed (e.g., `npx react-native run-ios`, `flutter run`)\n\n",
-        },
-        {
-            "name": "Technologies Used",
-            "description": "List the frameworks, SDKs, and libraries used (e.g., React Native, Flutter, Firebase)\n\n",
         },
         {
             "name": "Key Screens and Features",
@@ -115,11 +103,6 @@ DOCS_SECTIONS = {
             "Offer guidance on how to rename, rebrand, or restructure parts of the template\n\n",
         },
         {
-            "name": "Technologies Used",
-            "description": "List the frameworks, libraries, and tools integrated into the template "
-            "(e.g., ESLint, Prettier, Tailwind, Express)\n\n",
-        },
-        {
             "name": "Use Cases",
             "description": "Provide example scenarios where this template is useful "
             "(e.g., 'Use this for building a REST API with authentication')\n"
@@ -159,10 +142,6 @@ DOCS_SECTIONS = {
             "Include examples of common extension use cases\n\n",
         },
         {
-            "name": "Technologies Used",
-            "description": "List core dependencies, supported environments, or language-level features leveraged\n\n",
-        },
-        {
             "name": "Best Practices",
             "description": "Offer guidance for structuring large projects, writing maintainable code, or "
             "following framework conventions\n\n",
@@ -190,10 +169,6 @@ DOCS_SECTIONS = {
             "description": "Explain how to run inference or apply the model to new data\n"
             "Include input/output formats and example commands or code\n\n",
         },
-        {
-            "name": "Technologies Used",
-            "description": "List key tools, libraries, and frameworks (e.g., scikit-learn, TensorFlow, pandas)\n\n",
-        },
     ],
     "plugin": [
         {
@@ -205,10 +180,6 @@ DOCS_SECTIONS = {
             "name": "Integration Points",
             "description": "Describe hooks, lifecycle methods, or extension APIs the plugin interacts with\n\n",
         },
-        {
-            "name": "Technologies Used",
-            "description": "List frameworks, languages, or tooling\n\n",
-        },
     ],
     "chrome_extension": [
         {
@@ -216,10 +187,6 @@ DOCS_SECTIONS = {
             "description": "Explain how users interact with the extension "
             "(e.g., popup UI, context menu, background scripts)\n"
             "Include example scenarios or screenshots if applicable\n\n",
-        },
-        {
-            "name": "Technologies Used",
-            "description": "List libraries or frameworks (e.g., vanilla JS, React, Tailwind)\n\n",
         },
     ],
     "jupyter_notebook": [
@@ -231,10 +198,6 @@ DOCS_SECTIONS = {
         {
             "name": "Dataset (if applicable)",
             "description": "Describe any datasets used and where they come from\n\n",
-        },
-        {
-            "name": "Technologies Used",
-            "description": "List libraries (e.g., pandas, matplotlib, scikit-learn)\n\n",
         },
     ],
     "infrastructure": [
@@ -288,20 +251,12 @@ DOCS_SECTIONS = {
             "description": "Explain player controls and core mechanics\n"
             "Optionally include screenshots, video, or demo links\n\n",
         },
-        {
-            "name": "Technologies Used",
-            "description": "List engines, frameworks, or libraries used to build the game\n\n",
-        },
     ],
     "desktop_app": [
         {
             "name": "Usage",
             "description": "Describe the app's main features and user workflows\n"
             "Include screenshots if applicable\n\n",
-        },
-        {
-            "name": "Technologies Used",
-            "description": "List major libraries, frameworks, and build tools\n\n",
         },
     ],
     "dataset": [
@@ -326,10 +281,6 @@ DOCS_SECTIONS = {
             "name": "Features / Capabilities",
             "description": "List the core features or components of the project\n"
             "Include relevant examples, demos, or configurations if applicable\n\n",
-        },
-        {
-            "name": "Technologies Used",
-            "description": "List any major frameworks, libraries, or languages identified in the project\n\n",
         },
         {
             "name": "Usage Examples",
@@ -358,7 +309,12 @@ INITIAL_SECTIONS = [
 FINAL_SECTIONS = [
     {
         "name": "Project Structure",
-        "description": "Briefly explain the purpose of key directories and files\n\n",
+        "description": "Describe the layout of the project, highlighting the purpose of key directories and files\n\n",
+    },
+    {
+        "name": "Technologies Used",
+        "description": "List the major technologies used in the project, including "
+        "frameworks, libraries, SDKs, and tools\n\n",
     },
     {
         "name": "Additional Notes",

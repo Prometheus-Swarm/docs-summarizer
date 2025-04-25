@@ -61,6 +61,6 @@ steps = [
         description="Update audit results",
         prepare=partial(update_audit.prepare, role="worker"),
         execute=update_audit.execute,
-        worker="worker1",
+        worker="worker2",
     ),
 ]

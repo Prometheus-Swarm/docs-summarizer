@@ -57,7 +57,6 @@ PROMPTS = {
         "Create the documentation based SOLELY on the files actually present in the codebase.\n"
         "EXTREMELY IMPORTANT: If files are mentioned in the README but are not present in the codebase, "
         "do NOT mention them in your documentation. They do not exist and are not relevant.\n"
-        "If this section is not relevant to the repository, return an empty string.\n"
     ),
     "generate_readme": (
         "Create a descriptive title for the following README contents and create the README file:\n"
@@ -77,7 +76,7 @@ PROMPTS = {
         "   - The main features and value of the documentation\n"
     ),
     "review_readme_file": (
-        "Review the README_Prometheus.md file in the repository and evaluate its quality and "
+        "Review the README_Prometheus.md (NOT the README.md file) in the repository and evaluate its quality and "
         "relevance to the repository.\n\n"
         "Please analyze:\n"
         "1. Is the README_Prometheus.md file related to this specific repository? (Does it describe the actual code "
