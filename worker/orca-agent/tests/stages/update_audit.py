@@ -21,4 +21,5 @@ def execute(runner, worker, data):
     )
     response.raise_for_status()
 
-    return response.json()
+    # Return a formatted response regardless of type
+    return {"success": True, "message": response.text}

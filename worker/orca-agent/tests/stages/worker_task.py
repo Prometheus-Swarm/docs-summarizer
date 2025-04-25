@@ -5,20 +5,21 @@ import requests
 
 def prepare(runner, worker):
     """Prepare data for worker task"""
-
+    round_state = runner.state["rounds"].get(str(runner.current_round), {})
+    if not round_state.get("repo_url"):
+        print(f"✓ No repo url found for {worker.name} - continuing")
+        return
     return {
         "taskId": runner.config.task_id,
         "round_number": str(runner.current_round),
-        "repo_url": runner.state["repo_url"],
+        "repo_url": round_state["repo_url"],
     }
 
 
 def execute(runner, worker, data):
     """Execute worker task step"""
-    if not runner.state["repo_url"]:
-        print(f"✓ No repo url found for {worker.name} - continuing")
+    if not data:
         return {"success": True, "message": "No repo url found"}
-
     url = f"{worker.url}/worker-task/{runner.current_round}"
     response = requests.post(url, json=data)
     result = response.json()

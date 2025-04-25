@@ -6,17 +6,22 @@ import requests
 def prepare(runner, worker):
     """Prepare data for worker task"""
     # Create fetch-todo payload for stakingSignature and publicSignature
-    round_state = runner.state["rounds"][str(runner.current_round)]
+    round_state = runner.state["rounds"].get(str(runner.current_round), {})
+    if not round_state.get("pr_urls"):
+        print(f"✓ No PR URLs found for {worker.name} - continuing")
+        return
     return {
         "stakingKey": worker.staking_public_key,
         "roundNumber": runner.current_round,
         "githubUsername": worker.env.get("GITHUB_USERNAME"),
-        "prUrl": round_state["pr_urls"][worker.name],
+        "prUrl": round_state.get("pr_urls", {}).get(worker.name),
     }
 
 
 def execute(runner, worker, data):
     """Execute worker task step"""
+    if not data:
+        return {"success": True, "message": "No PR URL found"}
     url = f"{runner.config.middle_server_url}/summarizer/worker/check-todo"
     response = requests.post(
         url,

@@ -3,9 +3,9 @@ from prometheus_test.utils import create_signature
 
 
 def prepare(runner, worker):
-    round_state = runner.state["rounds"][str(runner.current_round)]
+    round_state = runner.state["rounds"].get(str(runner.current_round), {})
 
-    if worker.name not in round_state["pr_urls"]:
+    if worker.name not in round_state.get("pr_urls", {}):
         print(f"✓ No PR URL found for {worker.name} - continuing")
         return None
 
