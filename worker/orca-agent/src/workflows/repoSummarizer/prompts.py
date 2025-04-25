@@ -65,7 +65,7 @@ PROMPTS = {
         "The content will be added automatically, your job is just to create a good title."
     ),
     "create_pr": (
-        "You are creating a pull request for the documentation you have generated. "
+        "You are creating a pull request for the file README_Prometheus.md you have generated. "
         "The repository has been cloned to the current directory.\n"
         "Use the `create_pull_request_legacy` tool to create the pull request.\n"
         "IMPORTANT: Always use relative paths (e.g., 'src/file.py' not '/src/file.py')\n\n"
