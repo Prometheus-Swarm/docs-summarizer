@@ -1,7 +1,6 @@
 import { getOrcaClient } from "@_koii/task-manager/extensions";
 import { namespaceWrapper, TASK_ID } from "@_koii/namespace-wrapper";
 import "dotenv/config";
-import { getExistingIssues } from "../utils/existingIssues";
 import { status, middleServerUrl } from "../utils/constant";
 import dotenv from "dotenv";
 import { checkAnthropicAPIKey, isValidAnthropicApiKey } from "../utils/anthropicCheck";

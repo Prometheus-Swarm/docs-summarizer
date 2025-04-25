@@ -1,4 +1,14 @@
 DOCS_SECTIONS = {
+    "koii_task": [
+        {
+            "name": "Task Lifecycle",
+            "description": "Explain how the task and audit stages work for this task\n\n",
+        },
+        {
+            "name": "Task Variables",
+            "description": "List all environment variables used in the task, as listed in config-task.yml\n\n",
+        },
+    ],
     "library": [
         {
             "name": "API Reference",
