@@ -1,6 +1,6 @@
-import { getOrcaClient } from "@_koii/task-manager/extensions";
 import { middleServerUrl, status } from "../utils/constant";
 import { submissionJSONSignatureDecode } from "../utils/submissionJSONSignatureDecode";
+import { handleOrcaClientCreation, handleRequest } from "../utils/orcaHandler/orcaHandler";
 // import { status } from '../utils/constant'
 export async function audit(cid: string, roundNumber: number, submitterKey: string): Promise<boolean | void> {
   /**
@@ -11,11 +11,13 @@ export async function audit(cid: string, roundNumber: number, submitterKey: stri
    */
 
   try {
-    const orcaClient = await getOrcaClient();
-    if (!orcaClient) {
-      // await namespaceWrapper.storeSet(`result-${roundNumber}`, status.NO_ORCA_CLIENT);
+    let orcaClient;
+    try {
+      orcaClient = await handleOrcaClientCreation();
+    }catch{
       return;
     }
+
     // Check if the cid is one of the status
     if (Object.values(status).includes(cid)) {
       // This returns a dummy true
