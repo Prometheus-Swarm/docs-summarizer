@@ -8,6 +8,7 @@ import { checkGitHub } from "../utils/githubCheck";
 import { LogLevel } from "@_koii/namespace-wrapper/dist/types";
 import { actionMessage } from "../utils/constant";
 import { errorMessage } from "../utils/constant";
+import { v4 as uuidv4 } from "uuid";
 dotenv.config();
 
 export async function task(roundNumber: number): Promise<void> {
@@ -128,11 +129,22 @@ export async function task(roundNumber: number): Promise<void> {
     }
     const requiredWorkResponseData = await requiredWorkResponse.json();
     console.log("[TASK] requiredWorkResponseData: ", requiredWorkResponseData);
+    const uuid = uuidv4();
+    await namespaceWrapper.storeSet(`uuid-${roundNumber}`, uuid);
+
+    const podcallPayload = {
+      taskId: TASK_ID,
+      roundNumber,
+      uuid,
+    };
+
+    const podCallSignature = await namespaceWrapper.payloadSigning(podcallPayload, stakingKeypair.secretKey);
 
     const jsonBody = {
-      taskId: TASK_ID,
-      round_number: String(roundNumber),
+      task_id: TASK_ID,
+      round_number: roundNumber,
       repo_url: `https://github.com/${requiredWorkResponseData.data.repo_owner}/${requiredWorkResponseData.data.repo_name}`,
+      podcall_signature: podCallSignature,
     };
     console.log("[TASK] jsonBody: ", jsonBody);
     try {
@@ -144,70 +156,12 @@ export async function task(roundNumber: number): Promise<void> {
         body: JSON.stringify(jsonBody),
       });
       console.log("[TASK] repoSummaryResponse: ", repoSummaryResponse);
-      console.log("[TASK] repoSummaryResponse.data.result.data ", repoSummaryResponse.data.result.data);
-      const payload = {
-        taskId: TASK_ID,
-        action: "add-todo-pr",
-        roundNumber: roundNumber,
-        prUrl: repoSummaryResponse.data.result.data.pr_url,
-        stakingKey: stakingKey,
-      };
-      console.log("[TASK] Signing payload: ", payload);
-      if (repoSummaryResponse.status === 200) {
-        try {
-          const signature = await namespaceWrapper.payloadSigning(payload, stakingKeypair.secretKey);
-          console.log("[TASK] signature: ", signature);
-          const addPrToSummarizerTodoResponse = await fetch(`${middleServerUrl}/summarizer/worker/add-todo-pr`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ signature: signature, stakingKey: stakingKey }),
-          });
-          console.log("[TASK] addPrToSummarizerTodoResponse: ", addPrToSummarizerTodoResponse);
-        } catch (error) {
-          await namespaceWrapper.storeSet(`result-${roundNumber}`, status.ISSUE_FAILED_TO_ADD_PR_TO_SUMMARIZER_TODO);
-          console.error("[TASK] Error adding PR to summarizer todo:", error);
-        }
-        await namespaceWrapper.storeSet(`result-${roundNumber}`, status.ISSUE_SUCCESSFULLY_SUMMARIZED);
-      } else {
-        // post this summary response to slack` to notify the team
-        // THE HOOK IS ALREADY DISABLED
-        // try{
-        //   const slackResponse = await fetch('https://hooks.slack.com/services/', {
-        //     method: "POST",
-        //     headers: {
-        //     "Content-Type": "application/json",
-        //   },
-        //   body: JSON.stringify({
-        //     text: `[TASK] Error summarizing issue:\nStatus: ${repoSummaryResponse.status}\nData: ${JSON.stringify(repoSummaryResponse.data, null, 2)}`
-        //   }),
-        // });
-        // console.log("[TASK] slackResponse: ", slackResponse);
-        // }catch(error){
-        //   console.error("[TASK] Error posting to slack:", error);
-        // }
-
-        await namespaceWrapper.storeSet(`result-${roundNumber}`, status.ISSUE_FAILED_TO_BE_SUMMARIZED);
+      if (repoSummaryResponse.status !== 200) {
+        await namespaceWrapper.storeSet(`result-${roundNumber}`, status.ISSUE_SUMMARIZATION_FAILED);
       }
     } catch (error) {
-      await namespaceWrapper.storeSet(`result-${roundNumber}`, status.ISSUE_FAILED_TO_BE_SUMMARIZED);
-
-      // try{
-      //   const slackResponse = await fetch('https://hooks.slack.com/services', {
-      //     method: "POST",
-      //     headers: {
-      //       "Content-Type": "application/json",
-      //     },
-      //     body: JSON.stringify({
-      //       text: `[TASK] Error summarizing issue:\n ${JSON.stringify(error)}`
-      //     }),
-      //   });
-      //   console.log("[TASK] slackResponse: ", slackResponse);
-      // }catch(error){
-      //   console.error("[TASK] Error posting to slack:", error);
-      // }
-      console.error("[TASK] EXECUTE TASK ERROR:", JSON.stringify(error));
+      await namespaceWrapper.storeSet(`result-${roundNumber}`, status.ISSUE_SUMMARIZATION_FAILED);
+      console.error("[TASK] EXECUTE TASK ERROR:", error);
     }
   } catch (error) {
     await namespaceWrapper.storeSet(`result-${roundNumber}`, status.UNKNOWN_ERROR);

@@ -2,7 +2,7 @@ import { TASK_ID, namespaceWrapper } from "@_koii/namespace-wrapper";
 import "dotenv/config";
 import os from "os";
 
-const imageUrl = "docker.io/labrocadabro/prometheus-summarizer:0.2";
+const imageUrl = "docker.io/labrocadabro/prometheus-summarizer:0.4";
 
 function getHostIP() {
   const interfaces = os.networkInterfaces();

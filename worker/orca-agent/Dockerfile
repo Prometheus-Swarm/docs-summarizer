@@ -20,7 +20,7 @@ RUN git config --global --add safe.directory /app
 # Copy the rest of your application code into the container
 COPY . .
 
-ENV MIDDLE_SERVER_URL=https://builder247.api.koii.network
+ENV MIDDLE_SERVER_URL=https://ik8kcow8ksw8gwgoo0ggosko.dev.koii.network
 
 # Configure logging and output
 ENV PYTHONUNBUFFERED=1
@@ -40,9 +40,9 @@ CMD ["gunicorn", \
     "--capture-output", \
     "--enable-stdio-inheritance", \
     "--logger-class=gunicorn.glogging.Logger", \
-    "--timeout", "600", \
-    "--graceful-timeout", "600", \
-    "--keep-alive", "5", \
+    "--timeout", "1800", \
+    "--graceful-timeout", "1800", \
+    "--keep-alive", "15", \
     "-w", "1", \
     "-b", "0.0.0.0:8080", \
     "main:app"]
