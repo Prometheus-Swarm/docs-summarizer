@@ -1,23 +1,21 @@
 """Task service module."""
 
-import requests
-import os
-from flask import jsonify
 from prometheus_swarm.database import get_db
 from prometheus_swarm.clients import setup_client
 from src.workflows.repoSummarizer.workflow import RepoSummarizerWorkflow
-from prometheus_swarm.utils.logging import logger, log_error
+from prometheus_swarm.utils.logging import logger
 from dotenv import load_dotenv
 from src.workflows.repoSummarizer.prompts import PROMPTS
-from src.dababase.models import Submission
+from src.database.models import Submission
 
 load_dotenv()
 
 
-def handle_task_creation(task_id, round_number, repo_url):
+def handle_task_creation(task_id, round_number, repo_url, db=None):
     """Handle task creation request."""
     try:
-        db = get_db()
+        if db is None:
+            db = get_db()  # Fallback for direct calls
         client = setup_client("anthropic")
 
         workflow = RepoSummarizerWorkflow(
@@ -37,11 +35,9 @@ def handle_task_creation(task_id, round_number, repo_url):
             )
             db.add(submission)
             db.commit()
-            return jsonify({"success": True, "result": result})
+            return {"success": True, "result": result}
         else:
-            return jsonify(
-                {"success": False, "result": result.get("error", "No result")}
-            )
+            return {"success": False, "result": result.get("error", "No result")}
     except Exception as e:
         logger.error(f"Repo summarizer failed: {str(e)}")
         raise

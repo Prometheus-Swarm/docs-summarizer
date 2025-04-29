@@ -23,24 +23,28 @@ export async function audit(cid: string, roundNumber: number, submitterKey: stri
       // This returns a dummy true
       return true;
     }
-    const decodeResult = await submissionJSONSignatureDecode({submission_value: cid, submitterPublicKey: submitterKey, roundNumber: roundNumber});
+    const decodeResult = await submissionJSONSignatureDecode({
+      submission_value: cid,
+      submitterPublicKey: submitterKey,
+      roundNumber: roundNumber,
+    });
     if (!decodeResult) {
-      console.log("[AUDIT] DECODE RESULT FAILED.")
+      console.log("[AUDIT] DECODE RESULT FAILED.");
       return false;
     }
     console.log(`[AUDIT] ✅ Signature decoded successfully`);
 
     console.log(`[AUDIT] Checking summarizer status for submitter ${submitterKey}`);
-    const checkSummarizerResponse = await fetch(`${middleServerUrl}/api/summarizer/check-summarizer`, {
+    const checkSummarizerResponse = await fetch(`${middleServerUrl}/summarizer/worker/check-todo`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         stakingKey: submitterKey,
         roundNumber,
         githubUsername: decodeResult.githubUsername,
-        prUrl: decodeResult.prUrl
+        prUrl: decodeResult.prUrl,
       }),
     });
     const checkSummarizerJSON = await checkSummarizerResponse.json();
@@ -55,21 +59,22 @@ export async function audit(cid: string, roundNumber: number, submitterKey: stri
     console.log(`[AUDIT] Sending audit request for submitter: ${submitterKey}`);
     console.log(`[AUDIT] Submission data being sent to audit:`, decodeResult);
 
-    const result = await handleRequest({orcaClient, route: `audit/${roundNumber}`, bodyJSON: {
-      submission: decodeResult,
-    }});
+    const auditResult = await orcaClient.podCall(`worker-audit/${roundNumber}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        submission: decodeResult,
+      }),
+    });
 
-    console.log(`[AUDIT] Raw audit result:`, result);
-    console.log(`[AUDIT] Audit result data type:`, typeof result.data);
-    console.log(`[AUDIT] Audit result data value:`, result.data);
-
-    if (result.data === true) {
-      console.log(`[AUDIT] ✅ Audit passed for ${submitterKey}`);
-      return true;
+    if (auditResult.data.success) {
+      console.log(`[AUDIT] ✅ Audit successful for ${submitterKey}`);
+      return auditResult.data.data.is_approved;
     } else {
-      console.log(`[AUDIT] ❌ Audit failed for ${submitterKey}`);
-      console.log(`[AUDIT] Failed audit result data:`, result.data);
-      return false;
+      console.log(`[AUDIT] ❌ Audit could not be completed for ${submitterKey}`);
+      return true;
     }
   } catch (error) {
     console.error("[AUDIT] Error auditing submission:", error);

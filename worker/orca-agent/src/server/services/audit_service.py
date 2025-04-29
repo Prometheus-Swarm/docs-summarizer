@@ -42,6 +42,7 @@ def audit_repo(pr_url):
 
 
 if __name__ == "__main__":
-    # review_pr(["https://github.com/alexander-morris/koii-dumper-reveal"], "https://github.com/koii-network/namespace-wrapper/pull/1", "HermanL02")
+    # review_pr(["https://github.com/alexander-morris/koii-dumper-reveal"],
+    # "https://github.com/koii-network/namespace-wrapper/pull/1", "HermanL02")
 
     audit_repo("https://github.com/koii-network/namespace-wrapper/pull/1")
