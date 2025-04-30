@@ -13,12 +13,12 @@ def prepare(runner, worker):
         "action": "add-todo-pr",
         "roundNumber": runner.get("current_round"),
         "prUrl": pr_url,
-        "stakingKey": worker.staking_public_key,
-        "pubKey": worker.public_key,
+        "stakingKey": worker.get_key("staking_public"),
+        "pubKey": worker.get_key("main_public"),
     }
     return {
-        "signature": create_signature(worker.staking_signing_key, payload),
-        "stakingKey": worker.staking_public_key,
+        "signature": create_signature(worker.get_key("staking_signing"), payload),
+        "stakingKey": worker.get_key("staking_public"),
     }
 
 

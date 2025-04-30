@@ -21,17 +21,19 @@ def prepare(runner, worker):
     submitter_payload = {
         "taskId": runner.get("task_id"),
         "roundNumber": runner.get("current_round"),
-        "stakingKey": worker.staking_public_key,
-        "pubKey": worker.public_key,
+        "stakingKey": worker.get_key("staking_public"),
+        "pubKey": worker.get_key("main_public"),
         "action": "audit",
         **submission_data,
     }
 
     return {
         **submission_data,
-        "signature": create_signature(worker.staking_signing_key, submitter_payload),
-        "stakingKey": worker.staking_public_key,
-        "pubKey": worker.public_key,
+        "signature": create_signature(
+            worker.get_key("staking_signing"), submitter_payload
+        ),
+        "stakingKey": worker.get_key("staking_public"),
+        "pubKey": worker.get_key("main_public"),
     }
 
 

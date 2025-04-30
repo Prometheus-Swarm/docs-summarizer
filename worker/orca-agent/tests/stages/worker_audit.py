@@ -23,8 +23,8 @@ def prepare(runner, worker, target_name):
     #     "taskId": runner.get("task_id"),
     #     "roundNumber": runner.get("current_round"),
     #     "prUrl": pr_url,
-    #     "stakingKey": worker.staking_public_key,
-    #     "pubKey": worker.public_key,
+    #     "stakingKey": worker.get_key("staking_public"),
+    #     "pubKey": worker.get_key("main_public"),
     # }
 
     # Structure the payload according to what the server expects
@@ -47,13 +47,15 @@ def prepare(runner, worker, target_name):
     #     "prUrl": pr_url,
     #     "repoOwner": submission_data.get("repoOwner"),
     #     "repoName": submission_data.get("repoName"),
-    #     "githubUsername": worker.env.get("GITHUB_USERNAME"),
-    #     "stakingKey": worker.staking_public_key,
-    #     "pubKey": worker.public_key,
+    #     "githubUsername": worker.get_env("GITHUB_USERNAME"),
+    #     "stakingKey": worker.get_key("staking_public"),
+    #     "pubKey": worker.get_key("main_public"),
     #     "stakingSignature": create_signature(
-    #         worker.staking_signing_key, auditor_payload
+    #         worker.get_key("staking_signing"), auditor_payload
     #     ),
-    #     "publicSignature": create_signature(worker.public_signing_key, auditor_payload),
+    #     "publicSignature": create_signature(
+    #         worker.get_key("main_signing"), auditor_payload
+    #     ),
     # }
     return {"submission": submission_data}
 

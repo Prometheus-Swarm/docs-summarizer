@@ -11,18 +11,20 @@ def prepare(runner, worker):
         "taskId": runner.get("task_id"),
         "roundNumber": runner.get("current_round"),
         "action": "fetch-todo",
-        "githubUsername": worker.env.get("GITHUB_USERNAME"),
-        "stakingKey": worker.staking_public_key,
-        "pubKey": worker.public_key,
+        "githubUsername": worker.get_env("GITHUB_USERNAME"),
+        "stakingKey": worker.get_key("staking_public"),
+        "pubKey": worker.get_key("main_public"),
     }
 
     return {
         "taskId": runner.get("task_id"),
         "roundNumber": runner.get("current_round"),
-        "stakingKey": worker.staking_public_key,
-        "pubKey": worker.public_key,
-        "stakingSignature": create_signature(worker.staking_signing_key, payload),
-        "publicSignature": create_signature(worker.public_signing_key, payload),
+        "stakingKey": worker.get_key("staking_public"),
+        "pubKey": worker.get_key("main_public"),
+        "stakingSignature": create_signature(
+            worker.get_key("staking_signing"), payload
+        ),
+        "publicSignature": create_signature(worker.get_key("main_signing"), payload),
     }
 
 

@@ -11,9 +11,9 @@ def prepare(runner, worker):
         return None
 
     return {
-        "stakingKey": worker.staking_public_key,
+        "stakingKey": worker.get_key("staking_public"),
         "roundNumber": runner.get("current_round"),
-        "githubUsername": worker.env.get("GITHUB_USERNAME"),
+        "githubUsername": worker.get_env("GITHUB_USERNAME"),
         "prUrl": pr_url,
     }
 
