@@ -8,8 +8,8 @@ def prepare(runner, worker):
     """Prepare data for worker task"""
     # Create fetch-todo payload for stakingSignature and publicSignature
     payload = {
-        "taskId": runner.config.task_id,
-        "roundNumber": runner.current_round,
+        "taskId": runner.get("task_id"),
+        "roundNumber": runner.get("current_round"),
         "action": "fetch-todo",
         "githubUsername": worker.env.get("GITHUB_USERNAME"),
         "stakingKey": worker.staking_public_key,
@@ -17,8 +17,8 @@ def prepare(runner, worker):
     }
 
     return {
-        "taskId": runner.config.task_id,
-        "roundNumber": runner.current_round,
+        "taskId": runner.get("task_id"),
+        "roundNumber": runner.get("current_round"),
         "stakingKey": worker.staking_public_key,
         "pubKey": worker.public_key,
         "stakingSignature": create_signature(worker.staking_signing_key, payload),
@@ -28,7 +28,7 @@ def prepare(runner, worker):
 
 def execute(runner, worker, data):
     """Execute worker task step"""
-    url = f"{runner.config.middle_server_url}/summarizer/worker/fetch-todo"
+    url = f"{runner.get('middle_server_url')}/summarizer/worker/fetch-todo"
     response = requests.post(
         url,
         json={"signature": data["stakingSignature"], "stakingKey": data["stakingKey"]},
@@ -45,10 +45,7 @@ def execute(runner, worker, data):
         response.raise_for_status()
 
     if result.get("success"):
-        round_key = str(runner.current_round)
-        round_state = runner.state["rounds"].setdefault(round_key, {})
-        round_state["repo_url"] = (
-            f"https://github.com/{result['data']['repo_owner']}/{result['data']['repo_name']}"
-        )
+        repo_url = f"https://github.com/{result['data']['repo_owner']}/{result['data']['repo_name']}"
+        runner.set("repo_url", repo_url, scope="round")
 
     return result
