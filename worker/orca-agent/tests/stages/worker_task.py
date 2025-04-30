@@ -14,7 +14,7 @@ def prepare(runner, worker):
 
     # Generate UUID for this round
     uuid = str(uuid4())
-    runner.set(f"uuid.{worker.name}", uuid, scope="round")
+    runner.set(f"uuid.{worker.get('name')}", uuid, scope="round")
 
     # Create podcall payload and signature
     podcall_payload = {
@@ -22,7 +22,9 @@ def prepare(runner, worker):
         "roundNumber": runner.get("current_round"),
         "uuid": uuid,
     }
-    podcall_signature = create_signature(worker.staking_signing_key, podcall_payload)
+    podcall_signature = create_signature(
+        worker.get_key("staking_signing"), podcall_payload
+    )
 
     return {
         "task_id": runner.get("task_id"),
@@ -36,21 +38,23 @@ def execute(runner, worker, data):
     """Execute worker task step"""
     if not data:
         return {"success": True, "message": "No repo url found"}
-    url = f"{worker.url}/worker-task/{runner.get('current_round')}"
+    url = f"{worker.get('url')}/worker-task/{runner.get('current_round')}"
     response = requests.post(url, json=data)
     result = response.json()
 
     # Handle 409 gracefully - no eligible todos is an expected case
     if response.status_code == 409:
         print(
-            f"✓ {result.get('message', 'No eligible todos')} for {worker.name} - continuing"
+            f"✓ {result.get('message', 'No eligible todos')} for {worker.get('name')} - continuing"
         )
         return {"success": True, "message": result.get("message")}
 
     if result.get("success") and "pr_url" in result["result"]["data"]:
         # Store PR URL in state
         runner.set(
-            f"pr_urls.{worker.name}", result["result"]["data"]["pr_url"], scope="round"
+            f"pr_urls.{worker.get('name')}",
+            result["result"]["data"]["pr_url"],
+            scope="round",
         )
 
     return result

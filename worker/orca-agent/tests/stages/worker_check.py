@@ -5,9 +5,9 @@ import requests
 
 def prepare(runner, worker):
     """Prepare data for worker task"""
-    pr_url = runner.get(f"pr_urls.{worker.name}")
+    pr_url = runner.get(f"pr_urls.{worker.get('name')}")
     if pr_url is None:
-        print(f"✓ No pr_urls.{worker.name} found - continuing")
+        print(f"✓ No pr_urls.{worker.get('name')} found - continuing")
         return None
 
     return {
@@ -32,7 +32,7 @@ def execute(runner, worker, data):
     # Handle 409 gracefully - no eligible todos is an expected case
     if response.status_code == 409:
         print(
-            f"✓ {result.get('message', 'No eligible todos')} for {worker.name} - continuing"
+            f"✓ {result.get('message', 'No eligible todos')} for {worker.get('name')} - continuing"
         )
         return {"success": True, "message": result.get("message")}
     else:

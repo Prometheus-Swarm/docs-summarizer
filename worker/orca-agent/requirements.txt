@@ -17,4 +17,4 @@ sqlmodel>=0.0.22
 openai>=0.28.0
 colorama>=0.4.67
 prometheus-swarm>=0.1.7
-prometheus-test>=0.1.5
+prometheus-test>=0.1.7
