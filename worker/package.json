@@ -32,7 +32,8 @@
     "lodash": "^4.17.21",
     "nodemon": "^3.1.0",
     "seedrandom": "^3.0.5",
-    "tail": "^2.2.6"
+    "tail": "^2.2.6",
+    "uuid": "^11.1.0"
   },
   "peerDependencies": {
     "@_koii/namespace-wrapper": "^1.0.23"

@@ -1,4 +1,4 @@
-
+import { getOrcaClient } from "@_koii/task-manager/extensions";
 import { namespaceWrapper, TASK_ID } from "@_koii/namespace-wrapper";
 import "dotenv/config";
 import { status, middleServerUrl } from "../utils/constant";
@@ -9,8 +9,6 @@ import { LogLevel } from "@_koii/namespace-wrapper/dist/types";
 import { actionMessage } from "../utils/constant";
 import { errorMessage } from "../utils/constant";
 import { v4 as uuidv4 } from "uuid";
-import { handleOrcaClientCreation, handleRequest } from "../utils/orcaHandler/orcaHandler";
-
 dotenv.config();
 
 export async function task(roundNumber: number): Promise<void> {
@@ -24,7 +22,6 @@ export async function task(roundNumber: number): Promise<void> {
   // Changed from 3 to 4 to have more time
   if (roundNumber >= 4) {
     const triggerFetchAuditResult = await fetch(`${middleServerUrl}/summarizer/worker/update-audit-result`, {
-    const triggerFetchAuditResult = await fetch(`${middleServerUrl}/api/summarizer/trigger-fetch-audit-result`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -37,14 +34,7 @@ export async function task(roundNumber: number): Promise<void> {
   }
   console.log(`[TASK] EXECUTE TASK FOR ROUND ${roundNumber}`);
   try {
-    let orcaClient;
-    try {
-      orcaClient = await handleOrcaClientCreation();
-    }catch{
-      await namespaceWrapper.logMessage(LogLevel.Error, errorMessage.NO_ORCA_CLIENT, actionMessage.NO_ORCA_CLIENT);
-      await namespaceWrapper.storeSet(`result-${roundNumber}`, status.NO_ORCA_CLIENT);
-      return;
-    }
+    const orcaClient = await getOrcaClient();
     // check if the env variable is valid
     if (!process.env.ANTHROPIC_API_KEY) {
       await namespaceWrapper.logMessage(
@@ -93,7 +83,11 @@ export async function task(roundNumber: number): Promise<void> {
       await namespaceWrapper.storeSet(`result-${roundNumber}`, status.GITHUB_CHECK_FAILED);
       return;
     }
-
+    if (!orcaClient) {
+      await namespaceWrapper.logMessage(LogLevel.Error, errorMessage.NO_ORCA_CLIENT, actionMessage.NO_ORCA_CLIENT);
+      await namespaceWrapper.storeSet(`result-${roundNumber}`, status.NO_ORCA_CLIENT);
+      return;
+    }
 
     const stakingKeypair = await namespaceWrapper.getSubmitterAccount();
     if (!stakingKeypair) {
@@ -161,45 +155,12 @@ export async function task(roundNumber: number): Promise<void> {
         },
         body: JSON.stringify(jsonBody),
       });
-      const repoSummaryResponse = await handleRequest({orcaClient, route: `repo_summary/${roundNumber}`, bodyJSON: jsonBody});
       console.log("[TASK] repoSummaryResponse: ", repoSummaryResponse);
       if (repoSummaryResponse.status !== 200) {
         await namespaceWrapper.storeSet(`result-${roundNumber}`, status.ISSUE_SUMMARIZATION_FAILED);
-      console.log("[TASK] repoSummaryResponse.data.result.data ", repoSummaryResponse.data.result.data);
-      const payload = {
-        taskId: TASK_ID,
-        action: "add",
-        roundNumber: roundNumber,
-        prUrl: repoSummaryResponse.data.result.data.pr_url,
-        stakingKey: stakingKey
-      }
-      console.log("[TASK] Signing payload: ", payload);
-      if (repoSummaryResponse.status === 200) {
-        try{
-          const signature = await namespaceWrapper.payloadSigning(
-            payload,
-            stakingKeypair.secretKey,
-          );
-          console.log("[TASK] signature: ", signature);
-          const addPrToSummarizerTodoResponse = await fetch(`${middleServerUrl}/api/summarizer/add-pr-to-summarizer-todo`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ signature: signature, stakingKey: stakingKey }),
-          });
-          console.log("[TASK] addPrToSummarizerTodoResponse: ", addPrToSummarizerTodoResponse);
-        }catch(error){
-          await namespaceWrapper.storeSet(`result-${roundNumber}`, status.ISSUE_FAILED_TO_ADD_PR_TO_SUMMARIZER_TODO);
-          console.error("[TASK] Error adding PR to summarizer todo:", error);
-        }
-        await namespaceWrapper.storeSet(`result-${roundNumber}`, status.ISSUE_SUCCESSFULLY_SUMMARIZED);
-      } else {
-        await namespaceWrapper.storeSet(`result-${roundNumber}`, status.ISSUE_FAILED_TO_BE_SUMMARIZED);
       }
     } catch (error) {
       await namespaceWrapper.storeSet(`result-${roundNumber}`, status.ISSUE_SUMMARIZATION_FAILED);
-      await namespaceWrapper.storeSet(`result-${roundNumber}`, status.ISSUE_FAILED_TO_BE_SUMMARIZED);
       console.error("[TASK] EXECUTE TASK ERROR:", error);
     }
   } catch (error) {

@@ -3,7 +3,7 @@ dotenv.config();
 
 export const status = {
   ISSUE_SUMMARIZATION_FAILED: "Issue summarization failed",
-  ISSUE_SUMMARIZATION_SUCCEEDED: "Issue successfully summarized",
+  ISSUE_SUCCESSFULLY_SUMMARIZED: "Issue successfully summarized",
   NO_ISSUES_PENDING_TO_BE_SUMMARIZED: "No issues pending to be summarized",
   ROUND_LESS_THAN_OR_EQUAL_TO_1: "Round <= 1",
   NO_ORCA_CLIENT: "No orca client",
@@ -58,5 +58,3 @@ export const defaultBountyMarkdownFile =
 export const customReward = 400 * 10 ** 9; // This should be in ROE!
 
 export const middleServerUrl = "https://ik8kcow8ksw8gwgoo0ggosko.dev.koii.network";
-
-export const middleServerUrl = "https://builder247-prod.dev.koii.network"
