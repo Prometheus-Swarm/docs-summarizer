@@ -7,14 +7,14 @@ def prepare(runner, worker, role: str):
     """Prepare data for worker task"""
 
     return {
-        "taskId": runner.config.task_id,
-        "round": runner.current_round,
+        "taskId": runner.get("task_id"),
+        "round": runner.get("current_round"),
     }
 
 
 def execute(runner, worker, data):
     """Execute worker task step"""
-    url = f"{runner.config.middle_server_url}/summarizer/worker/update-audit-result"
+    url = f"{runner.get('middle_server_url')}/summarizer/worker/update-audit-result"
     response = requests.post(
         url,
         json=data,

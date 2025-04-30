@@ -7,40 +7,32 @@ import requests
 
 def prepare(runner, worker, target_name):
     """Prepare data for worker audit"""
-    round_state = runner.state["rounds"].get(str(runner.current_round), {})
-    pr_urls = round_state.get("pr_urls", {})
-
-    if target_name not in pr_urls:
-        # Return None to indicate this step should be skipped
-        print(
-            f"✓ No PR URL found for {target_name}, skipping {worker.name} audit - continuing"
-        )
+    pr_url = runner.get(f"pr_urls.{target_name}")
+    if pr_url is None:
+        print(f"✓ No pr_urls.{target_name} found - continuing")
         return None
 
-    # Get submission data from state
-    submission_data = round_state.get("submission_data", {}).get(target_name)
-    if not submission_data:
-        # Return None to indicate this step should be skipped
-        print(
-            f"✓ No submission data found for {target_name}, skipping {worker.name} audit - continuing"
-        )
+    submission_data = runner.get(f"submission_data.{target_name}")
+    if submission_data is None:
+        print(f"✓ No submission_data.{target_name} found - continuing")
         return None
 
+    # Note: Commented out code is preserved as it may be needed in future
     # Create auditor payload which is used to generate the signature
     # auditor_payload = {
-    #     "taskId": runner.config.task_id,
-    #     "roundNumber": runner.current_round,
-    #     "prUrl": pr_urls[target_name],
-    #     "stakingKey": worker.staking_public_key,
-    #     "pubKey": worker.public_key,
+    #     "taskId": runner.get("task_id"),
+    #     "roundNumber": runner.get("current_round"),
+    #     "prUrl": pr_url,
+    #     "stakingKey": worker.get_key("staking_public"),
+    #     "pubKey": worker.get_key("main_public"),
     # }
 
     # Structure the payload according to what the server expects
     # return {
     #     "submission": {
-    #         "taskId": runner.config.task_id,
-    #         "roundNumber": runner.current_round,
-    #         "prUrl": pr_urls[target_name],
+    #         "taskId": runner.get("task_id"),
+    #         "roundNumber": runner.get("current_round"),
+    #         "prUrl": pr_url,
     #         "githubUsername": submission_data.get("githubUsername"),
     #         "repoOwner": submission_data.get("repoOwner"),
     #         "repoName": submission_data.get("repoName"),
@@ -52,16 +44,18 @@ def prepare(runner, worker, target_name):
     #     "submitterSignature": submission_data.get("signature"),
     #     "submitterStakingKey": submission_data.get("stakingKey"),
     #     "submitterPubKey": submission_data.get("pubKey"),
-    #     "prUrl": pr_urls[target_name],
+    #     "prUrl": pr_url,
     #     "repoOwner": submission_data.get("repoOwner"),
     #     "repoName": submission_data.get("repoName"),
-    #     "githubUsername": worker.env.get("GITHUB_USERNAME"),
-    #     "stakingKey": worker.staking_public_key,
-    #     "pubKey": worker.public_key,
+    #     "githubUsername": worker.get_env("GITHUB_USERNAME"),
+    #     "stakingKey": worker.get_key("staking_public"),
+    #     "pubKey": worker.get_key("main_public"),
     #     "stakingSignature": create_signature(
-    #         worker.staking_signing_key, auditor_payload
+    #         worker.get_key("staking_signing"), auditor_payload
     #     ),
-    #     "publicSignature": create_signature(worker.public_signing_key, auditor_payload),
+    #     "publicSignature": create_signature(
+    #         worker.get_key("main_signing"), auditor_payload
+    #     ),
     # }
     return {"submission": submission_data}
 
@@ -75,7 +69,7 @@ def execute(runner, worker, data):
             "message": "Skipped due to missing PR URL or submission data",
         }
 
-    url = f"{worker.url}/worker-audit/{runner.current_round}"
+    url = f"{worker.get('url')}/worker-audit/{runner.get('current_round')}"
     response = requests.post(url, json=data)
     result = response.json()
 

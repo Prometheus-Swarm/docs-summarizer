@@ -6,7 +6,7 @@
     },
     "keypairs": {
       "staking": "WORKER1_STAKING_KEYPAIR",
-      "public": "WORKER1_PUBLIC_KEYPAIR"
+      "main": "WORKER1_PUBLIC_KEYPAIR"
     }
   },
   "worker2": {
@@ -16,7 +16,7 @@
     },
     "keypairs": {
       "staking": "WORKER2_STAKING_KEYPAIR",
-      "public": "WORKER2_PUBLIC_KEYPAIR"
+      "main": "WORKER2_PUBLIC_KEYPAIR"
     }
   }
 }

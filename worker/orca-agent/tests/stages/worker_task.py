@@ -1,18 +1,36 @@
 """Stage for executing worker tasks."""
 
 import requests
+from uuid import uuid4
+from prometheus_test.utils import create_signature
 
 
 def prepare(runner, worker):
     """Prepare data for worker task"""
-    round_state = runner.state["rounds"].get(str(runner.current_round), {})
-    if not round_state.get("repo_url"):
-        print(f"✓ No repo url found for {worker.name} - continuing")
-        return
+    repo_url = runner.get("repo_url")
+    if repo_url is None:
+        print("✓ No repo_url found - continuing")
+        return None
+
+    # Generate UUID for this round
+    uuid = str(uuid4())
+    runner.set(f"uuid.{worker.get('name')}", uuid, scope="round")
+
+    # Create podcall payload and signature
+    podcall_payload = {
+        "taskId": runner.get("task_id"),
+        "roundNumber": runner.get("current_round"),
+        "uuid": uuid,
+    }
+    podcall_signature = create_signature(
+        worker.get_key("staking_signing"), podcall_payload
+    )
+
     return {
-        "taskId": runner.config.task_id,
-        "round_number": str(runner.current_round),
-        "repo_url": round_state["repo_url"],
+        "task_id": runner.get("task_id"),
+        "round_number": str(runner.get("current_round")),
+        "repo_url": repo_url,
+        "podcall_signature": podcall_signature,
     }
 
 
@@ -20,24 +38,23 @@ def execute(runner, worker, data):
     """Execute worker task step"""
     if not data:
         return {"success": True, "message": "No repo url found"}
-    url = f"{worker.url}/worker-task/{runner.current_round}"
+    url = f"{worker.get('url')}/worker-task/{runner.get('current_round')}"
     response = requests.post(url, json=data)
     result = response.json()
 
     # Handle 409 gracefully - no eligible todos is an expected case
     if response.status_code == 409:
         print(
-            f"✓ {result.get('message', 'No eligible todos')} for {worker.name} - continuing"
+            f"✓ {result.get('message', 'No eligible todos')} for {worker.get('name')} - continuing"
         )
         return {"success": True, "message": result.get("message")}
 
     if result.get("success") and "pr_url" in result["result"]["data"]:
-        round_key = str(runner.current_round)
-        round_state = runner.state["rounds"].setdefault(round_key, {})
-
-        # Initialize pr_urls if not exists
-        if "pr_urls" not in round_state:
-            round_state["pr_urls"] = {}
-        round_state["pr_urls"][worker.name] = result["result"]["data"]["pr_url"]
+        # Store PR URL in state
+        runner.set(
+            f"pr_urls.{worker.get('name')}",
+            result["result"]["data"]["pr_url"],
+            scope="round",
+        )
 
     return result

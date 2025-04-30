@@ -3,23 +3,22 @@ from prometheus_test.utils import create_signature
 
 
 def prepare(runner, worker):
-    round_state = runner.state["rounds"].get(str(runner.current_round), {})
-
-    if worker.name not in round_state.get("pr_urls", {}):
-        print(f"✓ No PR URL found for {worker.name} - continuing")
+    pr_url = runner.get(f"pr_urls.{worker.get('name')}")
+    if pr_url is None:
+        print(f"✓ No pr_urls.{worker.get('name')} found - continuing")
         return None
 
     payload = {
-        "taskId": runner.config.task_id,
+        "taskId": runner.get("task_id"),
         "action": "add-todo-pr",
-        "roundNumber": runner.current_round,
-        "prUrl": round_state["pr_urls"][worker.name],
-        "stakingKey": worker.staking_public_key,
-        "pubKey": worker.public_key,
+        "roundNumber": runner.get("current_round"),
+        "prUrl": pr_url,
+        "stakingKey": worker.get_key("staking_public"),
+        "pubKey": worker.get_key("main_public"),
     }
     return {
-        "signature": create_signature(worker.staking_signing_key, payload),
-        "stakingKey": worker.staking_public_key,
+        "signature": create_signature(worker.get_key("staking_signing"), payload),
+        "stakingKey": worker.get_key("staking_public"),
     }
 
 
@@ -29,7 +28,7 @@ def execute(runner, worker, data):
     if data is None:
         return {"success": True, "message": "Skipped due to missing PR URL"}
 
-    url = f"{runner.config.middle_server_url}/summarizer/worker/add-todo-pr"
+    url = f"{runner.get('middle_server_url')}/summarizer/worker/add-todo-pr"
     response = requests.post(
         url,
         json={"signature": data["signature"], "stakingKey": data["stakingKey"]},
@@ -39,7 +38,7 @@ def execute(runner, worker, data):
     # Handle 409 gracefully - no eligible todos is an expected case
     if response.status_code == 409:
         print(
-            f"✓ {result.get('message', 'No eligible todos')} for {worker.name} - continuing"
+            f"✓ {result.get('message', 'No eligible todos')} for {worker.get('name')} - continuing"
         )
         return {"success": True, "message": result.get("message")}
     else:
