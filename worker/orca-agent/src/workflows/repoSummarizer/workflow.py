@@ -17,6 +17,7 @@ from src.workflows.repoSummarizer.docs_sections import (
     INITIAL_SECTIONS,
     FINAL_SECTIONS,
 )
+from prometheus_swarm.tools.git_operations.implementations import commit_and_push
 
 
 class Task:
@@ -120,7 +121,6 @@ class RepoSummarizerWorkflow(Workflow):
 
     def run(self):
         self.setup()
-
         # Create a feature branch
         log_section("CREATING FEATURE BRANCH")
         branch_phase = phases.BranchCreationPhase(workflow=self)
@@ -137,7 +137,17 @@ class RepoSummarizerWorkflow(Workflow):
         # Store branch name in context
         self.context["head"] = branch_result["data"]["branch_name"]
         log_key_value("Branch created", self.context["head"])
-
+        try:
+            commit_and_push(message="empty commit", allow_empty=True)
+            self.create_pull_request()
+        except Exception as e:
+            log_error(e, "Failed to commit and push")
+            return {
+                "success": False,
+                "message": "Failed to commit and push",
+                "data": None,
+            }
+        
         # Classify repository
         repo_classification_result = self.classify_repository()
         if not repo_classification_result or not repo_classification_result.get(
