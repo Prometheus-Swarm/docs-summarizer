@@ -67,6 +67,9 @@ export async function audit(cid: string, roundNumber: number, submitterKey: stri
       }),
     });
 
+    const auditResultJson = await auditResult.json();
+    console.log(`[AUDIT] Audit result JSON:`, auditResultJson);
+
     if (auditResult.data.success) {
       console.log(`[AUDIT] ✅ Audit successful for ${submitterKey}`);
       return auditResult.data.data.is_approved;
