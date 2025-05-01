@@ -147,11 +147,14 @@ export async function task(roundNumber: number): Promise<void> {
     const requiredWorkResponseData = await requiredWorkResponse.json();
     console.log("[TASK] requiredWorkResponseData: ", requiredWorkResponseData);
     const uuid = uuidv4();
-    
-    // await namespaceWrapper.storeSet(`work-info`, JSON.stringify({
-    //   ...requiredWorkResponseData.data,
-    //   round: roundNumber
-    // }));
+    const alreadyAssigned = await namespaceWrapper.storeGet(JSON.stringify(requiredWorkResponseData.data.id));
+    if (alreadyAssigned) {
+      await namespaceWrapper.storeSet(`result-${roundNumber}`, status.NOT_FINISHED_TASK);
+      return;
+    }else{
+      await namespaceWrapper.storeSet(JSON.stringify(requiredWorkResponseData.data.id), "true");
+    }
+ 
     await namespaceWrapper.storeSet(`uuid-${roundNumber}`, uuid);
 
     const podcallPayload = {
