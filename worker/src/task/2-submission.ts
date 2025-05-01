@@ -28,7 +28,7 @@ export async function submission(roundNumber: number) : Promise<string | void> {
     }
     console.log(`[SUBMISSION] Task result status: ${taskResult}`);
 
-    if (taskResult !== status.ISSUE_SUCCESSFULLY_SUMMARIZED) {
+    if (taskResult !== status.SAVING_TODO_PR_SUCCEEDED) {
       console.log(`[SUBMISSION] Task not successfully summarized. Status: ${taskResult}`);
       return taskResult;
     }

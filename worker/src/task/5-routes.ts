@@ -63,9 +63,7 @@ export async function routes() {
     const message = req.body.message;
     console.log("[TASK] req.body", req.body);
     try {
-      if (success) {
-        await namespaceWrapper.storeSet(`result-${roundNumber}`, status.ISSUE_SUCCESSFULLY_SUMMARIZED);
-      } else {
+      if (!success){ 
         await namespaceWrapper.storeSet(`result-${roundNumber}`, status.ISSUE_SUMMARIZATION_FAILED);
         console.error("[TASK] Error summarizing repository:", message);
         return;
