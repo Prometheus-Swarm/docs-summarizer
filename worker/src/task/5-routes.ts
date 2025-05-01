@@ -58,7 +58,7 @@ export async function routes() {
   app.post("/add-todo-pr", async (req, res) => {
     const signature = req.body.signature;
     const prUrl = req.body.prUrl;
-    const roundNumber = Number(req.body.roundNumber);
+    const roundNumber = await namespaceWrapper.getRound();
     const success = req.body.success;
     const message = req.body.message;
     console.log("[TASK] req.body", req.body);
@@ -68,17 +68,17 @@ export async function routes() {
         console.error("[TASK] Error summarizing repository:", message);
         return;
       }
-      const uuid = await namespaceWrapper.storeGet(`uuid-${roundNumber}`);
-      console.log("[TASK] uuid: ", uuid);
-      if (!uuid) {
-        throw new Error("No uuid found");
-      }
+      // const uuid = await namespaceWrapper.storeGet(`uuid-${roundNumber}`);
+      // console.log("[TASK] uuid: ", uuid);
+      // if (!uuid) {
+      //   throw new Error("No uuid found");
+      // }
 
-      const currentRound = await namespaceWrapper.getRound();
+      // const currentRound = await namespaceWrapper.getRound();
 
-      if (roundNumber !== currentRound) {
-        throw new Error(`Invalid round number: ${roundNumber}. Current round: ${currentRound}.`);
-      }
+      // if (roundNumber !== currentRound) {
+      //   throw new Error(`Invalid round number: ${roundNumber}. Current round: ${currentRound}.`);
+      // }
 
       const publicKey = await namespaceWrapper.getMainAccountPubkey();
       const stakingKeypair = await namespaceWrapper.getSubmitterAccount();
@@ -105,14 +105,14 @@ export async function routes() {
       if (jsonData.taskId !== TASK_ID) {
         throw new Error(`Invalid task ID from signature: ${jsonData.taskId}. Actual task ID: ${TASK_ID}`);
       }
-      if (jsonData.roundNumber !== currentRound) {
-        throw new Error(
-          `Invalid round number from signature: ${jsonData.roundNumber}. Current round: ${currentRound}.`,
-        );
-      }
-      if (jsonData.uuid !== uuid) {
-        throw new Error(`Invalid uuid from signature: ${jsonData.uuid}. Actual uuid: ${uuid}`);
-      }
+      // if (jsonData.roundNumber !== currentRound) {
+      //   throw new Error(
+      //     `Invalid round number from signature: ${jsonData.roundNumber}. Current round: ${currentRound}.`,
+      //   );
+      // }
+      // if (jsonData.uuid !== uuid) {
+      //   throw new Error(`Invalid uuid from signature: ${jsonData.uuid}. Actual uuid: ${uuid}`);
+      // }
       const middleServerPayload = {
         taskId: jsonData.taskId,
         roundNumber,
