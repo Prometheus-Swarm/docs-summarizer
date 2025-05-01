@@ -19,35 +19,30 @@ export async function submission(roundNumber: number) : Promise<string | void> {
       return;
     }
     console.log("[SUBMISSION] Orca client initialized successfully");
-
     console.log(`[SUBMISSION] Fetching task result for round ${roundNumber}...`);
-    const taskResult = await namespaceWrapper.storeGet(`result-${roundNumber}`);
-    if (!taskResult) {
-      console.log("[SUBMISSION] No task result found for this round");
-      return status.NO_DATA_FOR_THIS_ROUND;
-    }
-    console.log(`[SUBMISSION] Task result status: ${taskResult}`);
-
-    if (taskResult !== status.SAVING_TODO_PR_SUCCEEDED) {
-      console.log(`[SUBMISSION] Task not successfully summarized. Status: ${taskResult}`);
+    const shouldMakeSubmission = await namespaceWrapper.storeGet(`shouldMakeSubmission`);
+    if (!shouldMakeSubmission || shouldMakeSubmission !== "true") {
+      const taskResult = await namespaceWrapper.storeGet(`result-${roundNumber}`);
+      if (!taskResult) {
+        console.log("[SUBMISSION] No task result found for this round");
+        return status.NO_DATA_FOR_THIS_ROUND;
+      }
       return taskResult;
     }
-
-    console.log(`[SUBMISSION] Fetching submission data for round ${roundNumber}...`);
-    const result = await orcaClient.podCall(`submission/${roundNumber}`);
+    const submissionRoundNumber = await namespaceWrapper.storeGet(`submissionRoundNumber`);
+    if (!submissionRoundNumber) {
+      console.log("[SUBMISSION] No submission Round Number found for this round");
+      return status.NO_DATA_FOR_THIS_ROUND;
+    }
+    console.log(`[SUBMISSION] Fetching submission data for round ${roundNumber}. and submission roundnumber ${submissionRoundNumber}`);
+    const result = await orcaClient.podCall(`submission/${submissionRoundNumber}`);
     let submission;
 
     console.log("[SUBMISSION] Submission result:", result.data);
 
     if (result.data === "No submission") {
-      // console.log("[SUBMISSION] No existing submission found, creating new submission object");
       console.log("[SUBMISSION] No existing submission found");
-      return status.NOT_FINISHED_TASK;
-      // submission = {
-      //   githubUsername: process.env.GITHUB_USERNAME,
-      //   prUrl: "none",
-      //   roundNumber,
-      // };
+      return status.NO_SUBMISSION_BUT_SUBMISSION_CALLED;
     } else {
       submission = result.data;
     }
