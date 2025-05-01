@@ -58,6 +58,7 @@ export async function routes() {
   app.post("/add-todo-pr", async (req, res) => {
     const signature = req.body.signature;
     const prUrl = req.body.prUrl;
+    // Modified round number not fetch from the input instead fetch from the namespace
     const roundNumber = await namespaceWrapper.getRound();
     const success = req.body.success;
     const message = req.body.message;
