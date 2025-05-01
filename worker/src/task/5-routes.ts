@@ -64,6 +64,7 @@ export async function routes() {
     console.log("[TASK] req.body", req.body);
     try {
       if (!success){ 
+        // TODO: Need to call the server to cancel the task
         await namespaceWrapper.storeSet(`result-${roundNumber}`, status.ISSUE_SUMMARIZATION_FAILED);
         console.error("[TASK] Error summarizing repository:", message);
         return;
