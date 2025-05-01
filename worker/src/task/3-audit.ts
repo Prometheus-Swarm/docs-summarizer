@@ -18,13 +18,13 @@ export async function audit(cid: string, roundNumber: number, submitterKey: stri
     }
     // Check if the cid is one of the status
     if (Object.values(status).includes(cid)) {
-      // This returns a dummy true
+      // This returns a dummy trued
       return true;
     }
     const decodeResult = await submissionJSONSignatureDecode({
       submission_value: cid,
       submitterPublicKey: submitterKey,
-      roundNumber: roundNumber,
+      roundNumber: roundNumber, // Decode using the actual round number
     });
     if (!decodeResult) {
       console.log("[AUDIT] DECODE RESULT FAILED.");
@@ -40,7 +40,7 @@ export async function audit(cid: string, roundNumber: number, submitterKey: stri
       },
       body: JSON.stringify({
         stakingKey: submitterKey,
-        roundNumber,
+        roundNumber, // This round number doesn't matter
         githubUsername: decodeResult.githubUsername,
         prUrl: decodeResult.prUrl,
       }),
@@ -57,7 +57,7 @@ export async function audit(cid: string, roundNumber: number, submitterKey: stri
     console.log(`[AUDIT] Sending audit request for submitter: ${submitterKey}`);
     console.log(`[AUDIT] Submission data being sent to audit:`, decodeResult);
 
-    const auditResult = await orcaClient.podCall(`worker-audit/${roundNumber}`, {
+    const auditResult = await orcaClient.podCall(`worker-audit/${decodeResult.roundNumber}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
