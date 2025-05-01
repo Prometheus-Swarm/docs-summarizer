@@ -44,7 +44,8 @@ export async function submission(roundNumber: number) : Promise<string | void> {
       console.log("[SUBMISSION] No existing submission found");
       return status.NO_SUBMISSION_BUT_SUBMISSION_CALLED;
     } else {
-      submission = result.data.data;
+      // Add extra error handling for https://koii-workspace.slack.com/archives/C0886H01JM8/p1746137232538419
+      submission = typeof result.data === 'object' && 'data' in result.data ? result.data.data : result.data;
     }
 
     console.log("[SUBMISSION] Validating submission data...");
