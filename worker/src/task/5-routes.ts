@@ -144,3 +144,9 @@ export async function routes() {
     }
   });
 }
+
+
+// TODO: To be completed
+app.post("/failed-task", async (req, res) => {
+  res.status(200).json({ result: "Successfully saved task result" });
+});

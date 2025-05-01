@@ -16,6 +16,7 @@ export const status = {
   NO_DATA_FOR_THIS_ROUND: "No data for this round",
   SAVING_TODO_PR_FAILED: "Summarizer todo PR not saved",
   SAVING_TODO_PR_SUCCEEDED: "Summarizer todo PR saved",
+  NOT_FINISHED_TASK: "Not finished task",
 };
 
 export const errorMessage = {

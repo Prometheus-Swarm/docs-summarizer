@@ -66,7 +66,7 @@ export async function audit(cid: string, roundNumber: number, submitterKey: stri
         submission: decodeResult,
       }),
     });
-
+    console.log(`[AUDIT] Audit result:`, auditResult);
     const auditResultJson = await auditResult.json();
     console.log(`[AUDIT] Audit result JSON:`, auditResultJson);
 
