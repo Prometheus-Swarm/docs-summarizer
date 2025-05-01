@@ -67,26 +67,11 @@ export async function audit(cid: string, roundNumber: number, submitterKey: stri
       }),
     });
     console.log(`[AUDIT] Audit result:`, auditResult);
-    const auditResultJson = await auditResult.json();
-    console.log(`[AUDIT] Audit result JSON:`, auditResultJson);
-    // Add extra error handling for https://koii-workspace.slack.com/archives/C0886H01JM8/p1746137232538419
-    // check if this .data have success, if not check .data.data have success
-    let auditResultDataJson;
-    if (typeof auditResult.data === 'object' && 'success' in auditResult.data) {
-      console.log("[AUDIT] Audit result data is an object with 'success' property");
-      auditResultDataJson = auditResult.data;
-    } else if (typeof auditResult.data === 'object' && 'data' in auditResult.data && 'success' in auditResult.data.data) {
-      console.log("[AUDIT] Audit result data is an object with 'data' property and 'success' property");
-      auditResultDataJson = auditResult.data.data;
-    } else {
-      console.log(`[AUDIT] ❌ Audit result is not a valid object`);
-      return true;
-    }
-    console.log("[AUDIT] Audit result data JSON:", auditResultDataJson);
+    const auditResultData = auditResult.data;
 
-    if (auditResultDataJson.success) {
+    if (auditResultData.success) {
       console.log(`[AUDIT] ✅ Audit successful for ${submitterKey}`);
-      return auditResultDataJson.data.is_approved;
+      return auditResultData.data.is_approved;
     } else {
       console.log(`[AUDIT] ❌ Audit could not be completed for ${submitterKey}`);
       return true;
