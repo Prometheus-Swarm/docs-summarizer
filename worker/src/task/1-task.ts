@@ -115,14 +115,31 @@ export async function task(roundNumber: number): Promise<void> {
     // const initializedDocumentSummarizeIssues = await getInitializedDocumentSummarizeIssues(existingIssues);
 
     console.log(`[TASK] Making Request to Middle Server with taskId: ${TASK_ID} and round: ${roundNumber}`);
-    const requiredWorkResponse = await fetch(`${middleServerUrl}/summarizer/worker/fetch-todo`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ signature: signature, stakingKey: stakingKey }),
-    });
-    // check if the response is 200
+    
+    let requiredWorkResponse: Response = new Response();
+    let retryCount = 0;
+    const maxRetries = 18; // 3 minutes with 10 second intervals
+    const retryDelay = 10000; // 10 seconds in milliseconds
+
+    while (retryCount < maxRetries) {
+      requiredWorkResponse = await fetch(`${middleServerUrl}/summarizer/worker/fetch-todo`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ signature: signature, stakingKey: stakingKey }),
+      });
+
+      if (requiredWorkResponse.status === 200) {
+        break;
+      }
+
+      console.log(`[TASK] Server returned status ${requiredWorkResponse.status}, retrying in ${retryDelay/1000} seconds... (Attempt ${retryCount + 1}/${maxRetries})`);
+      await new Promise(resolve => setTimeout(resolve, retryDelay));
+      retryCount++;
+    }
+
+    // check if the response is 200 after all retries
     if (requiredWorkResponse.status !== 200) {
       await namespaceWrapper.storeSet(`result-${roundNumber}`, status.NO_ISSUES_PENDING_TO_BE_SUMMARIZED);
       return;
@@ -130,6 +147,11 @@ export async function task(roundNumber: number): Promise<void> {
     const requiredWorkResponseData = await requiredWorkResponse.json();
     console.log("[TASK] requiredWorkResponseData: ", requiredWorkResponseData);
     const uuid = uuidv4();
+    
+    // await namespaceWrapper.storeSet(`work-info`, JSON.stringify({
+    //   ...requiredWorkResponseData.data,
+    //   round: roundNumber
+    // }));
     await namespaceWrapper.storeSet(`uuid-${roundNumber}`, uuid);
 
     const podcallPayload = {
