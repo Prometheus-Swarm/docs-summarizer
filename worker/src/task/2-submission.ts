@@ -40,14 +40,15 @@ export async function submission(roundNumber: number) : Promise<string | void> {
 
     console.log("[SUBMISSION] Submission result:", result.data);
 
-    if (result.data === "No submission") {
+    if (!result || result.data === "No submission") {
       console.log("[SUBMISSION] No existing submission found");
       return status.NO_SUBMISSION_BUT_SUBMISSION_CALLED;
     } else {
-      submission = result.data;
+      submission = result.data.data;
     }
 
     console.log("[SUBMISSION] Validating submission data...");
+    console.log("[SUBMISSION] Submission data:", submission);
     if (submission.roundNumber !== roundNumber) {
       console.error(`[SUBMISSION] Round number mismatch. Expected: ${roundNumber}, Got: ${submission.roundNumber}`);
       throw new Error("Submission is not for the current round");
