@@ -40,12 +40,14 @@ export async function submission(roundNumber: number) : Promise<string | void> {
     console.log("[SUBMISSION] Submission result:", result.data);
 
     if (result.data === "No submission") {
-      console.log("[SUBMISSION] No existing submission found, creating new submission object");
-      submission = {
-        githubUsername: process.env.GITHUB_USERNAME,
-        prUrl: "none",
-        roundNumber,
-      };
+      // console.log("[SUBMISSION] No existing submission found, creating new submission object");
+      console.log("[SUBMISSION] No existing submission found");
+      return status.NOT_FINISHED_TASK;
+      // submission = {
+      //   githubUsername: process.env.GITHUB_USERNAME,
+      //   prUrl: "none",
+      //   roundNumber,
+      // };
     } else {
       submission = result.data;
     }
