@@ -21,7 +21,7 @@ def audit_submission(round_number: int):
             400,
         )
 
-    submission_round_number = submission.get("roundNumber")
+    # submission_round_number = submission.get("roundNumber")
     task_id = submission.get("taskId")
     pr_url = submission.get("prUrl")
     github_username = submission.get("githubUsername")
@@ -37,11 +37,11 @@ def audit_submission(round_number: int):
             400,
         )
     print(f"Repo owner: {repo_owner}, Repo name: {repo_name}")
-    if int(round_number) != submission_round_number:
-        return (
-            jsonify({"success": False, "data": {"error": "Round number mismatch"}}),
-            400,
-        )
+    # if int(round_number) != submission_round_number:
+    #     return (
+    #         jsonify({"success": False, "data": {"error": "Round number mismatch"}}),
+    #         400,
+    #     )
 
     if (
         not task_id
