@@ -17,6 +17,7 @@ export const status = {
   SAVING_TODO_PR_FAILED: "Summarizer todo PR not saved",
   SAVING_TODO_PR_SUCCEEDED: "Summarizer todo PR saved",
   NOT_FINISHED_TASK: "Not finished task",
+  NO_SUBMISSION_BUT_SUBMISSION_CALLED: "No submission but submission called",
 };
 
 export const errorMessage = {

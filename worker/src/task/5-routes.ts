@@ -59,14 +59,16 @@ export async function routes() {
     const signature = req.body.signature;
     const prUrl = req.body.prUrl;
     // Modified round number not fetch from the input instead fetch from the namespace
-    const roundNumber = await namespaceWrapper.getRound();
+    const roundNumber = req.body.roundNumber;
     const success = req.body.success;
     const message = req.body.message;
     console.log("[TASK] req.body", req.body);
     try {
       if (!success){ 
         // TODO: Need to call the server to cancel the task
-        await namespaceWrapper.storeSet(`result-${roundNumber}`, status.ISSUE_SUMMARIZATION_FAILED);
+        // await namespaceWrapper.storeSet(`result-${roundNumber}`, status.ISSUE_SUMMARIZATION_FAILED);
+        // It cannot be round number based, becasue the current round might already missed the submission window
+        // await namespaceWrapper.storeSet(`result-${roundNumber}`, status.ISSUE_SUMMARIZATION_FAILED);
         console.error("[TASK] Error summarizing repository:", message);
         return;
       }
@@ -137,11 +139,12 @@ export async function routes() {
       if (middleServerResponse.status !== 200) {
         throw new Error(`Posting to middle server failed: ${middleServerResponse.statusText}`);
       }
-      await namespaceWrapper.storeSet(`result-${roundNumber}`, status.SAVING_TODO_PR_SUCCEEDED);
+      await namespaceWrapper.storeSet(`shouldMakeSubmission`, "true");
+      await namespaceWrapper.storeSet(`submissionRoundNumber`, roundNumber.toString());
       res.status(200).json({ result: "Successfully saved PR" });
     } catch (error) {
       console.error("[TASK] Error adding PR to summarizer todo:", error);
-      await namespaceWrapper.storeSet(`result-${roundNumber}`, status.SAVING_TODO_PR_FAILED);
+      // await namespaceWrapper.storeSet(`result-${roundNumber}`, status.SAVING_TODO_PR_FAILED);
       res.status(400).json({ error: "Failed to save PR" });
     }
   });
