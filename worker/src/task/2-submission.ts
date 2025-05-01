@@ -37,15 +37,21 @@ export async function submission(roundNumber: number) : Promise<string | void> {
     console.log(`[SUBMISSION] Fetching submission data for round ${roundNumber}. and submission roundnumber ${submissionRoundNumber}`);
     const result = await orcaClient.podCall(`submission/${submissionRoundNumber}`);
     let submission;
-
-    console.log("[SUBMISSION] Submission result:", result.data);
-
+    console.log("[SUBMISSION] Submission result:", result);
+    console.log("[SUBMISSION] Submission result data:", result.data);
+  
     if (!result || result.data === "No submission") {
       console.log("[SUBMISSION] No existing submission found");
       return status.NO_SUBMISSION_BUT_SUBMISSION_CALLED;
     } else {
       // Add extra error handling for https://koii-workspace.slack.com/archives/C0886H01JM8/p1746137232538419
-      submission = typeof result.data === 'object' && 'data' in result.data ? result.data.data : result.data;
+      if (typeof result.data === 'object' && 'data' in result.data) {
+        console.log("[SUBMISSION] Submission result data is an object with 'data' property");
+        submission = result.data.data;
+      } else {
+        console.log("[SUBMISSION] Submission result data is not an object with 'data' property");
+        submission = result.data;
+      }
     }
 
     console.log("[SUBMISSION] Validating submission data...");
