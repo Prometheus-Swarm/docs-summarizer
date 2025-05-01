@@ -118,7 +118,7 @@ export async function task(roundNumber: number): Promise<void> {
     
     let requiredWorkResponse: Response = new Response();
     let retryCount = 0;
-    const maxRetries = 18; // 3 minutes with 10 second intervals
+    const maxRetries = 36; // 6 minutes with 10 second intervals
     const retryDelay = 10000; // 10 seconds in milliseconds
 
     while (retryCount < maxRetries) {
