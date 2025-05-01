@@ -59,7 +59,7 @@ export async function routes() {
     const signature = req.body.signature;
     const prUrl = req.body.prUrl;
     // Modified round number not fetch from the input instead fetch from the namespace
-    const roundNumber = req.body.roundNumber;
+    const roundNumber = parseInt(req.body.roundNumber);
     const success = req.body.success;
     const message = req.body.message;
     console.log("[TASK] req.body", req.body);
