@@ -91,6 +91,8 @@ export async function submission(roundNumber: number) : Promise<string | void> {
     console.log("[SUBMISSION] Storing submission on IPFS...");
     const cid = await storeFile({ signature }, "submission.json");
     console.log("[SUBMISSION] Submission stored successfully. CID:", cid);
+    // If done please set the shouldMakeSubmission to false
+    await namespaceWrapper.storeSet(`shouldMakeSubmission`, "false");
     return cid || void 0;
   } catch (error) {
     console.error("[SUBMISSION] Error during submission process:", error);
