@@ -1,7 +1,8 @@
 import { storeFile } from "../utils/ipfs";
 import { getOrcaClient } from "@_koii/task-manager/extensions";
 import { namespaceWrapper, TASK_ID } from "@_koii/namespace-wrapper";
-import { status } from "../utils/constant";
+import { middleServerUrl, status } from "../utils/constant";
+import { preRunCheck } from "../utils/check/checks";
 export async function submission(roundNumber: number) : Promise<string | void> {
   /**
    * Retrieve the task proofs from your container and submit for auditing
@@ -9,6 +10,18 @@ export async function submission(roundNumber: number) : Promise<string | void> {
    * The default implementation handles uploading the proofs to IPFS
    * and returning the CID
    */
+  if(!await preRunCheck(roundNumber.toString())){
+    return;
+  }
+  const stakingKeypair = await namespaceWrapper.getSubmitterAccount();
+  const pubKey = await namespaceWrapper.getMainAccountPubkey();
+  if (!stakingKeypair || !pubKey) {
+    console.error("[SUBMISSION] No staking keypair or public key found");
+    throw new Error("No staking keypair or public key found");
+  }
+  const stakingKey = stakingKeypair.publicKey.toBase58();
+  
+  const secretKey = stakingKeypair.secretKey;
   console.log(`[SUBMISSION] Starting submission process for round ${roundNumber}`);
 
   try {
@@ -22,88 +35,88 @@ export async function submission(roundNumber: number) : Promise<string | void> {
     console.log(`[SUBMISSION] Fetching task result for round ${roundNumber}...`);
     const shouldMakeSubmission = await namespaceWrapper.storeGet(`shouldMakeSubmission`);
     if (!shouldMakeSubmission || shouldMakeSubmission !== "true") {
-      const taskResult = await namespaceWrapper.storeGet(`result-${roundNumber}`);
-      if (!taskResult) {
-        console.log("[SUBMISSION] No task result found for this round");
-        return status.NO_DATA_FOR_THIS_ROUND;
-      }
-      return taskResult;
+      return;
     }
-    const submissionRoundNumber = await namespaceWrapper.storeGet(`submissionRoundNumber`);
-    if (!submissionRoundNumber) {
-      console.log("[SUBMISSION] No submission Round Number found for this round");
-      return status.NO_DATA_FOR_THIS_ROUND;
-    }
-    console.log(`[SUBMISSION] Fetching submission data for round ${roundNumber}. and submission roundnumber ${submissionRoundNumber}`);
-    const result = await orcaClient.podCall(`submission/${submissionRoundNumber}`);
-    let submission;
-    console.log("[SUBMISSION] Submission result:", result);
-    console.log("[SUBMISSION] Submission result data:", result.data);
-  
-    if (!result || result.data === "No submission") {
-      console.log("[SUBMISSION] No existing submission found");
-      return status.NO_SUBMISSION_BUT_SUBMISSION_CALLED;
-    } else {
-      // Add extra error handling for https://koii-workspace.slack.com/archives/C0886H01JM8/p1746137232538419
-      if (typeof result.data === 'object' && 'data' in result.data) {
-        console.log("[SUBMISSION] Submission result data is an object with 'data' property");
-        submission = result.data.data;
-      } else {
-        console.log("[SUBMISSION] Submission result data is not an object with 'data' property");
-        submission = result.data;
-      }
-    }
-
-    console.log("[SUBMISSION] Validating submission data...");
-    console.log("[SUBMISSION] Submission data:", submission);
-    if (submission.roundNumber !== roundNumber) {
-      console.error(`[SUBMISSION] Round number mismatch. Expected: ${roundNumber}, Got: ${submission.roundNumber}`);
-      throw new Error("Submission is not for the current round");
-    }
-
-    if (!submission.prUrl) {
-      console.error("[SUBMISSION] Missing PR URL in submission");
-      throw new Error("Submission is missing PR URL");
-    }
-
-    console.log("[SUBMISSION] Submission data validated successfully:", submission);
-
-    console.log("[SUBMISSION] Getting submitter account...");
-    const stakingKeypair = await namespaceWrapper.getSubmitterAccount();
-
-    if (!stakingKeypair) {
-      console.error("[SUBMISSION] No staking keypair found");
-      throw new Error("No staking keypair found");
-    }
-    console.log("[SUBMISSION] Submitter account retrieved successfully");
-
-    const stakingKey = stakingKeypair.publicKey.toBase58();
-    const pubKey = await namespaceWrapper.getMainAccountPubkey();
-    console.log("[SUBMISSION] Staking key:", stakingKey);
-    console.log("[SUBMISSION] Public key:", pubKey);
-
-    console.log("[SUBMISSION] Signing submission payload...");
-    const signature = await namespaceWrapper.payloadSigning(
-      {
-        taskId: TASK_ID,
-        roundNumber,
-        stakingKey,
-        pubKey,
-        action: "audit",
-        ...submission,
-      },
-      stakingKeypair.secretKey,
-    );
-    console.log("[SUBMISSION] Payload signed successfully");
-
-    console.log("[SUBMISSION] Storing submission on IPFS...");
-    const cid = await storeFile({ signature }, "submission.json");
-    console.log("[SUBMISSION] Submission stored successfully. CID:", cid);
-    // If done please set the shouldMakeSubmission to false
-    await namespaceWrapper.storeSet(`shouldMakeSubmission`, "false");
+   
+    const cid = await makeSubmission({orcaClient, roundNumber, stakingKey, publicKey: pubKey, secretKey});
     return cid || void 0;
   } catch (error) {
     console.error("[SUBMISSION] Error during submission process:", error);
     throw error;
   }
+}
+
+async function makeSubmission({orcaClient, roundNumber, stakingKey, publicKey, secretKey}: {orcaClient: any, roundNumber: number, stakingKey: string, publicKey: string, secretKey: Uint8Array<ArrayBufferLike>}) {
+  const swarmBountyId = await namespaceWrapper.storeGet(`swarmBountyId`);
+  if (!swarmBountyId) {
+    console.log("[SUBMISSION] No swarm bounty id found for this round");
+    return;
+  }
+  console.log(`[SUBMISSION] Fetching submission data for round ${roundNumber}. and submission roundnumber ${swarmBountyId}`);
+  const result = await orcaClient.podCall(`submission/${swarmBountyId}`);
+  let submission;
+  console.log("[SUBMISSION] Submission result:", result);
+  console.log("[SUBMISSION] Submission result data:", result.data);
+
+  if (!result || result.data === "No submission") {
+    console.log("[SUBMISSION] No existing submission found");
+    return;
+  } else {
+    // Add extra error handling for https://koii-workspace.slack.com/archives/C0886H01JM8/p1746137232538419
+    if (typeof result.data === 'object' && 'data' in result.data) {
+      console.log("[SUBMISSION] Submission result data is an object with 'data' property");
+      submission = result.data.data;
+    } else {
+      console.log("[SUBMISSION] Submission result data is not an object with 'data' property");
+      submission = result.data;
+    }
+  }
+
+  if (!submission.prUrl) {
+    console.error("[SUBMISSION] Missing PR URL in submission");
+    throw new Error("Submission is missing PR URL");
+  }
+      const middleServerPayload = {
+        taskId: TASK_ID,
+        swarmBountyId,
+        prUrl: submission.prUrl,
+        stakingKey,
+        publicKey,
+        action: "add-round-number",
+      };
+      
+      const middleServerSignature = await namespaceWrapper.payloadSigning(middleServerPayload, secretKey);
+      const middleServerResponse = await fetch(`${middleServerUrl}/summarizer/worker/add-round-number`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ signature: middleServerSignature, stakingKey: stakingKey }),
+      });
+
+      console.log("[TASK] Add PR Response: ", middleServerResponse);
+
+      if (middleServerResponse.status !== 200) {
+        throw new Error(`Posting to middle server failed: ${middleServerResponse.statusText}`);
+      }
+      const signature = await namespaceWrapper.payloadSigning(
+        {
+          taskId: TASK_ID,
+          roundNumber,
+          stakingKey,
+          pubKey:publicKey,
+          // action: "audit",
+          ...submission,
+        },
+        secretKey,
+      );
+      console.log("[SUBMISSION] Payload signed successfully");
+  
+      console.log("[SUBMISSION] Storing submission on IPFS...");
+      const cid = await storeFile({ signature }, "submission.json");
+      console.log("[SUBMISSION] Submission stored successfully. CID:", cid);
+      // If done please set the shouldMakeSubmission to false
+      await namespaceWrapper.storeSet(`shouldMakeSubmission`, "false");
+      await namespaceWrapper.storeSet(`swarmBountyId`, "");
+      return cid;
 }
