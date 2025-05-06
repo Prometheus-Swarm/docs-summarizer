@@ -5,8 +5,8 @@ import { LogLevel } from "@_koii/namespace-wrapper/dist/types";
 import { errorMessage, actionMessage, status } from "../constant";
 import { checkAnthropicAPIKey } from "./anthropicCheck";
 import { checkGitHub } from "./githubCheck";
-export async function preRunCheck(roundNumber:string){
-if (!process.env.ANTHROPIC_API_KEY) {
+export async function preRunCheck(roundNumber: string) {
+  if (!process.env.ANTHROPIC_API_KEY) {
     await namespaceWrapper.logMessage(
       LogLevel.Error,
       errorMessage.ANTHROPIC_API_KEY_INVALID,

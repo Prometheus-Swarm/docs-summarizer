@@ -4,7 +4,7 @@
 //     headers: {
 //       "Content-Type": "application/json",
 //     },
-//     body: JSON.stringify({ 
+//     body: JSON.stringify({
 //       text: `[TASK] Error summarizing issue:\n ${JSON.stringify({
 //         status: "error",
 //         data: {

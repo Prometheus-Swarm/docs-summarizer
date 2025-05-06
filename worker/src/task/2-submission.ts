@@ -24,7 +24,7 @@ export async function submission(roundNumber: number): Promise<string | void> {
    * The default implementation handles uploading the proofs to IPFS
    * and returning the CID
    */
-  if(!await preRunCheck(roundNumber.toString())){
+  if (!(await preRunCheck(roundNumber.toString()))) {
     return;
   }
   const stakingKeypair = await namespaceWrapper.getSubmitterAccount();
@@ -34,14 +34,14 @@ export async function submission(roundNumber: number): Promise<string | void> {
     throw new Error("No staking keypair or public key found");
   }
   const stakingKey = stakingKeypair.publicKey.toBase58();
-  
+
   const secretKey = stakingKeypair.secretKey;
   console.log(`[SUBMISSION] Starting submission process for round ${roundNumber}`);
 
   try {
     const orcaClient = await initializeOrcaClient();
     const shouldMakeSubmission = await namespaceWrapper.storeGet(`shouldMakeSubmission`);
-    
+
     if (!shouldMakeSubmission || shouldMakeSubmission !== "true") {
       return;
     }
@@ -51,7 +51,7 @@ export async function submission(roundNumber: number): Promise<string | void> {
       roundNumber,
       stakingKey,
       publicKey: pubKey,
-      secretKey
+      secretKey,
     });
 
     return cid || void 0;
@@ -64,19 +64,19 @@ export async function submission(roundNumber: number): Promise<string | void> {
 async function initializeOrcaClient() {
   console.log("[SUBMISSION] Initializing Orca client...");
   const orcaClient = await getOrcaClient();
-  
+
   if (!orcaClient) {
     console.error("[SUBMISSION] Failed to initialize Orca client");
     throw new Error("Failed to initialize Orca client");
   }
-  
+
   console.log("[SUBMISSION] Orca client initialized successfully");
   return orcaClient;
 }
 
 async function makeSubmission(params: SubmissionParams): Promise<string | void> {
   const { orcaClient, roundNumber, stakingKey, publicKey, secretKey } = params;
-  
+
   const swarmBountyId = await namespaceWrapper.storeGet(`swarmBountyId`);
   if (!swarmBountyId) {
     console.log("[SUBMISSION] No swarm bounty id found for this round");
@@ -94,35 +94,36 @@ async function makeSubmission(params: SubmissionParams): Promise<string | void> 
     prUrl: submissionData.prUrl,
     stakingKey,
     publicKey,
-    secretKey
+    secretKey,
   });
 
-  const signature = await signSubmissionPayload({
-    taskId: TASK_ID,
-    roundNumber,
-    stakingKey,
-    pubKey: publicKey,
-    ...submissionData
-  }, secretKey);
+  const signature = await signSubmissionPayload(
+    {
+      taskId: TASK_ID,
+      roundNumber,
+      stakingKey,
+      pubKey: publicKey,
+      ...submissionData,
+    },
+    secretKey,
+  );
 
   const cid = await storeSubmissionOnIPFS(signature);
   await cleanupSubmissionState();
-  
+
   return cid;
 }
 
 async function fetchSubmissionData(orcaClient: any, swarmBountyId: string): Promise<SubmissionData | null> {
   console.log(`[SUBMISSION] Fetching submission data for swarm bounty ${swarmBountyId}`);
   const result = await orcaClient.podCall(`submission/${swarmBountyId}`);
-  
+
   if (!result || result.data === "No submission") {
     console.log("[SUBMISSION] No existing submission found");
     return null;
   }
 
-  const submission = typeof result.data === 'object' && 'data' in result.data 
-    ? result.data.data 
-    : result.data;
+  const submission = typeof result.data === "object" && "data" in result.data ? result.data.data : result.data;
 
   if (!submission?.prUrl) {
     throw new Error("Submission is missing PR URL");
@@ -140,7 +141,7 @@ async function notifyMiddleServer(params: {
   secretKey: Uint8Array<ArrayBufferLike>;
 }) {
   const { taskId, swarmBountyId, prUrl, stakingKey, publicKey, secretKey } = params;
-  
+
   const payload = {
     taskId,
     swarmBountyId,

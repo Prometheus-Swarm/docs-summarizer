@@ -140,13 +140,13 @@ export async function getRandomNodes(roundNumber: number, numberOfNodes: number)
 
   const lastRoundSubmissions = lastRoundSubmission.submissions;
   console.log("Last round submissions:", lastRoundSubmissions);
-  
+
   // Get the last round number
   const lastRound = Object.keys(lastRoundSubmissions).pop();
   if (!lastRound) {
     return [];
   }
-  
+
   // Get the submissions for that round
   const submissions = lastRoundSubmissions[lastRound];
   console.log("Submissions:", submissions);
@@ -156,12 +156,12 @@ export async function getRandomNodes(roundNumber: number, numberOfNodes: number)
   if (availableKeys.length <= numberOfNodes) {
     return availableKeys;
   }
-  
+
   const seed = TASK_ID + roundNumber.toString() || "default" + roundNumber;
   const rng = seedrandom(seed);
   // Use the keys from the submissions object
   const randomKeys = availableKeys.sort(() => rng() - 0.5).slice(0, numberOfNodes);
-  
+
   console.log("Random keys:", randomKeys);
   return randomKeys;
 }

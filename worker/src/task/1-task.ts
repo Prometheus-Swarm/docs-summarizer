@@ -21,7 +21,6 @@ export async function task(roundNumber: number): Promise<void> {
   // FORCE TO PAUSE 30 SECONDS
   // No submission on Round 0 so no need to trigger fetch audit result before round 3
   // Changed from 3 to 4 to have more time
-  
   // if (roundNumber >= 4) {
   //   const auditRound = roundNumber - 4;
   //   const response = await fetch(`${middleServerUrl}/summarizer/worker/update-audit-result`, {

@@ -14,7 +14,6 @@ import { middleServerUrl, status } from "../utils/constant";
 
 //Example route
 export async function routes() {
-  
   app.get("/value", async (_req, res) => {
     const value = await namespaceWrapper.storeGet("value");
     console.log("value", value);
@@ -64,7 +63,7 @@ export async function routes() {
     const message = req.body.message;
     console.log("[TASK] req.body", req.body);
     try {
-      if (!success){ 
+      if (!success) {
         console.error("[TASK] Error summarizing repository:", message);
         return;
       }
@@ -127,7 +126,6 @@ export async function routes() {
     }
   });
 }
-
 
 // TODO: To be completed
 app.post("/failed-task", async (req, res) => {
