@@ -25,7 +25,7 @@ repositoryUrl: "https://github.com/koii-network/builder-247"
 
 ## Image URL ##
 # 230x86 pixels.
-imageUrl: "https://koii-k2-task-metadata.s3.us-east-2.amazonaws.com/Docs.png"
+imageUrl: "https://s3.koii.network/koii-k2-task-metadata/Docs.png"
 
 ## Info URL ##
 infoUrl: "https://www.koii.network/blog/Earn-Crypto-With-AI-Agent"
