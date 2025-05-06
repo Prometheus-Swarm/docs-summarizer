@@ -75,11 +75,11 @@ export async function routes() {
           taskId: TASK_ID,
           action: "add-todo-status",
           stakingKey,
-        }
+        };
         const middleServerSignature = await namespaceWrapper.payloadSigning(middleServerPayload, secretKey);
         console.error("[TASK] Error summarizing repository:", message);
         console.log("[TASK] middleServerSignature", middleServerSignature);
-        
+
         const middleServerResponse = await fetch(`${middleServerUrl}/summarizer/worker/add-todo-status`, {
           method: "POST",
           headers: {
@@ -93,8 +93,6 @@ export async function routes() {
         }
         return;
       }
-
-
 
       if (!publicKey) {
         throw new Error("No public key found");
