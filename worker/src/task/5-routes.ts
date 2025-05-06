@@ -63,11 +63,6 @@ export async function routes() {
     const message = req.body.message;
     console.log("[TASK] req.body", req.body);
     try {
-      if (!success) {
-        console.error("[TASK] Error summarizing repository:", message);
-        return;
-      }
-
       const publicKey = await namespaceWrapper.getMainAccountPubkey();
       const stakingKeypair = await namespaceWrapper.getSubmitterAccount();
       if (!stakingKeypair) {
@@ -75,6 +70,31 @@ export async function routes() {
       }
       const stakingKey = stakingKeypair.publicKey.toBase58();
       const secretKey = stakingKeypair.secretKey;
+      if (!success) {
+        const middleServerPayload = {
+          taskId: TASK_ID,
+          action: "add-todo-status",
+          stakingKey,
+        }
+        const middleServerSignature = await namespaceWrapper.payloadSigning(middleServerPayload, secretKey);
+        console.error("[TASK] Error summarizing repository:", message);
+        console.log("[TASK] middleServerSignature", middleServerSignature);
+        
+        const middleServerResponse = await fetch(`${middleServerUrl}/summarizer/worker/add-todo-status`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ signature: middleServerSignature, stakingKey }),
+        });
+        if (middleServerResponse.status !== 200) {
+          console.error("[TASK] Error posting to middle server:", middleServerResponse.statusText);
+          // throw new Error(`Posting to middle server failed: ${middleServerResponse.statusText}`);
+        }
+        return;
+      }
+
+
 
       if (!publicKey) {
         throw new Error("No public key found");
