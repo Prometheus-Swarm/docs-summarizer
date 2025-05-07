@@ -9,6 +9,9 @@ from src.server.services.repo_summary_service import logger
 bp = Blueprint("task", __name__)
 executor = ThreadPoolExecutor(max_workers=2)
 
+# Track in-progress tasks
+in_progress_tasks = set()
+
 
 def post_pr_url(agent_result, task_id, signature, swarmBountyId):
     try:
@@ -53,6 +56,10 @@ def start_task():
     if any(data.get(field) is None for field in required_fields):
         return jsonify({"error": "Missing data"}), 401
 
+    # Check if this swarm bounty is already being processed
+    if swarmBountyId in in_progress_tasks:
+        return jsonify({"status": "Task is already being processed"}), 200
+
     # Get db instance in the main thread where we have app context
     db = get_db()
 
@@ -65,6 +72,15 @@ def start_task():
         )
         return jsonify(result)
     else:
+        # Mark this swarm bounty as in progress
+        in_progress_tasks.add(swarmBountyId)
+        
+        def cleanup_callback(future):
+            # Remove from in-progress tasks when done
+            in_progress_tasks.discard(swarmBountyId)
+            # Call the original callback
+            post_pr_url(future, task_id, podcall_signature, swarmBountyId)
+
         agent_result = executor.submit(
             repo_summary_service.handle_task_creation,
             task_id=task_id,
@@ -72,9 +88,7 @@ def start_task():
             repo_url=repo_url,
             db=db,  # Pass db instance
         )
-        agent_result.add_done_callback(
-            lambda future: post_pr_url(future, task_id, podcall_signature, swarmBountyId)
-        )
+        agent_result.add_done_callback(cleanup_callback)
         return jsonify({"status": "Task is being processed"}), 200
 
 
