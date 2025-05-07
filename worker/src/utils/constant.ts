@@ -57,6 +57,6 @@ export const actionMessage = {
 export const defaultBountyMarkdownFile =
   "https://raw.githubusercontent.com/koii-network/prometheus-swarm-bounties/master/README.md";
 
-export const customReward = 1; // This should be in ROE!
+export const customReward = 400 * 10 ** 9; // This should be in ROE!
 
-export const middleServerUrl = "https://builder247-test.dev1.koii.network";
+export const middleServerUrl = "https://builder247-prod.dev.koii.network";
