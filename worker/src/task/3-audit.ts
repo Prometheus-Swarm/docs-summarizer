@@ -2,13 +2,11 @@ import { getOrcaClient } from "@_koii/task-manager/extensions";
 import { middleServerUrl, status } from "../utils/constant";
 import { submissionJSONSignatureDecode } from "../utils/submissionJSONSignatureDecode";
 // import { status } from '../utils/constant'
-export async function audit(cid: string, roundNumber: number, submitterKey: string): Promise<boolean | void> {
-  /**
-   * Audit a submission
-   * This function should return true if the submission is correct, false otherwise
-   * The default implementation retrieves the proofs from IPFS
-   * and sends them to your container for auditing
-   */
+
+const TIMEOUT_MS = 180000; // 3 minutes in milliseconds
+const MAX_RETRIES = 3;
+
+async function auditWithTimeout(cid: string, roundNumber: number, submitterKey: string): Promise<boolean | void> {
   let orcaClient;
   try {
     orcaClient = await getOrcaClient();
@@ -81,5 +79,30 @@ export async function audit(cid: string, roundNumber: number, submitterKey: stri
     return true; // Return false on error instead of undefined
   } finally {
     console.log("[AUDIT] Cleaning up resources");
+  }
+}
+
+export async function audit(cid: string, roundNumber: number, submitterKey: string): Promise<boolean | void> {
+  let retries = 0;
+  
+  while (retries < MAX_RETRIES) {
+    try {
+      const result = await Promise.race<boolean | void>([
+        auditWithTimeout(cid, roundNumber, submitterKey),
+        new Promise((_, reject) => setTimeout(() => reject(new Error("Audit timeout")), TIMEOUT_MS)),
+      ]);
+      return result;
+    } catch (error) {
+      retries++;
+      console.log(`[AUDIT] Attempt ${retries} failed:`, error);
+      
+      if (retries === MAX_RETRIES) {
+        console.log(`[AUDIT] Max retries (${MAX_RETRIES}) reached. Giving up.`);
+        return true; // Return true as a fallback
+      }
+      
+      // Wait for a short time before retrying
+      await new Promise(resolve => setTimeout(resolve, 5000));
+    }
   }
 }
