@@ -282,8 +282,8 @@ class RepoSummarizerWorkflow(Workflow):
 
         readme_sections_spec = (
             list(INITIAL_SECTIONS)
-            + list(DOCS_SECTIONS[repo_type])
-            + list(FINAL_SECTIONS)
+            # + list(DOCS_SECTIONS[repo_type])
+            # + list(FINAL_SECTIONS)
         )
 
         self.context["repo_type"] = repo_type

@@ -59,4 +59,4 @@ export const defaultBountyMarkdownFile =
 
 export const customReward = 1; // This should be in ROE!
 
-export const middleServerUrl = "https://builder247-test.dev.koii.network";
+export const middleServerUrl = "https://builder247-test.dev1.koii.network";
