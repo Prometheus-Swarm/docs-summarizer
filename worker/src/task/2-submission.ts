@@ -158,7 +158,7 @@ async function notifyMiddleServer(params: {
     body: JSON.stringify({ signature, stakingKey }),
   });
 
-  console.log("[TASK] Add PR Response: ", response);
+  console.log("[SUBMISSION] Add PR Response: ", response);
 
   if (response.status !== 200) {
     throw new Error(`Posting to middle server failed: ${response.statusText}`);

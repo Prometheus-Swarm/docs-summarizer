@@ -73,6 +73,7 @@ export async function routes() {
       if (!success) {
         const middleServerPayload = {
           taskId: TASK_ID,
+          swarmBountyId,
           action: "add-todo-status",
           stakingKey,
         };
