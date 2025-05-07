@@ -28,7 +28,7 @@ export async function task() {
           taskId: TASK_ID,
           // roundNumber: roundNumber,
           action: "fetch-todo",
-          githubUsername: stakingKey,
+          githubUsername: process.env.GITHUB_USERNAME,
           stakingKey: stakingKey,
         },
         stakingKeypair.secretKey,
