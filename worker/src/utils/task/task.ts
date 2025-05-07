@@ -83,7 +83,7 @@ export async function task() {
       };
       console.log("[TASK] jsonBody: ", jsonBody);
       try {
-        const timeout = 10000; // 10 seconds timeout
+        const timeout = 100000; // 100 seconds timeout
         let repoSummaryResponse;
         let retryCount = 0;
         const maxRetries = 3;
@@ -108,7 +108,7 @@ export async function task() {
               throw error; // If we've exhausted retries, throw the error
             }
             console.log(`[TASK] Attempt ${retryCount} failed, retrying...`);
-            await new Promise((resolve) => setTimeout(resolve, 2000)); // Wait 2 seconds before retry
+            await new Promise((resolve) => setTimeout(resolve, 10000)); // Wait 10 seconds before retry
           }
         }
       } catch (error) {
