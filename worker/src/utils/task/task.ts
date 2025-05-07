@@ -34,7 +34,7 @@ export async function task() {
         stakingKeypair.secretKey,
       );
 
-      const retryDelay = 10000; // 10 seconds in milliseconds
+      const retryDelay = 60000; // 1 minute in milliseconds
 
       while (true) {
         requiredWorkResponse = await fetch(`${middleServerUrl}/summarizer/worker/fetch-todo`, {
