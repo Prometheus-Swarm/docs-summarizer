@@ -57,7 +57,6 @@ export async function task() {
 
       // check if the response is 200 after all retries
       if (!requiredWorkResponse || requiredWorkResponse.status !== 200) {
-        //   await namespaceWrapper.storeSet(`result-${roundNumber}`, status.NO_ISSUES_PENDING_TO_BE_SUMMARIZED);
         return;
       }
       const requiredWorkResponseData = await requiredWorkResponse.json();
@@ -84,16 +83,33 @@ export async function task() {
       };
       console.log("[TASK] jsonBody: ", jsonBody);
       try {
-        const repoSummaryResponse = await orcaClient.podCall(`worker-task`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(jsonBody),
-        });
-        console.log("[TASK] repoSummaryResponse: ", repoSummaryResponse);
-        if (repoSummaryResponse.status !== 200) {
-          // await namespaceWrapper.storeSet(`result-${roundNumber}`, status.ISSUE_SUMMARIZATION_FAILED);
+        const timeout = 10000; // 10 seconds timeout
+        let repoSummaryResponse;
+        let retryCount = 0;
+        const maxRetries = 3;
+
+        while (retryCount < maxRetries) {
+          try {
+            repoSummaryResponse = await Promise.race([
+              orcaClient.podCall(`worker-task`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify(jsonBody),
+              }),
+              new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), timeout)),
+            ]);
+            console.log("[TASK] repoSummaryResponse: ", repoSummaryResponse);
+            break; // If successful, break the retry loop
+          } catch (error) {
+            retryCount++;
+            if (retryCount === maxRetries) {
+              throw error; // If we've exhausted retries, throw the error
+            }
+            console.log(`[TASK] Attempt ${retryCount} failed, retrying...`);
+            await new Promise((resolve) => setTimeout(resolve, 2000)); // Wait 2 seconds before retry
+          }
         }
       } catch (error) {
         //   await namespaceWrapper.storeSet(`result-${roundNumber}`, status.ISSUE_SUMMARIZATION_FAILED);
