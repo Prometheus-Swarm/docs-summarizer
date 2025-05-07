@@ -11,14 +11,14 @@ export default {
     filename: "main.js",
     path: path.resolve(__dirname, "dist"),
     libraryTarget: "commonjs2",
-    clean: true
+    clean: true,
   },
   target: "node",
-  
+
   resolve: {
-    extensions: [".ts", ".js"]
+    extensions: [".ts", ".js"],
   },
-  
+
   module: {
     rules: [
       {
@@ -26,16 +26,14 @@ export default {
         use: {
           loader: "ts-loader",
           options: {
-            transpileOnly: true
-          }
+            transpileOnly: true,
+          },
         },
-        exclude: /node_modules/
-      }
-    ]
+        exclude: /node_modules/,
+      },
+    ],
   },
-  
-  plugins: [
 
-  ],
+  plugins: [],
   devtool: "source-map",
 };

@@ -19,11 +19,13 @@ tests/
 ## Prerequisites
 
 1. Install the test framework:
+
 ```bash
 pip install -e test-framework/
 ```
 
 2. Set up environment variables in `.env`:
+
 ```
 ANTHROPIC_API_KEY=your_test_key
 GITHUB_USERNAME=your_test_username
@@ -47,12 +49,15 @@ python -m tests.e2e --reset
 ## Test Flow
 
 1. API Key Validation
+
    - Validates Anthropic API key
 
 2. GitHub Validation
+
    - Validates GitHub credentials
 
 3. Todo Management
+
    - Fetches todos for each worker
    - Generates summaries
    - Submits results

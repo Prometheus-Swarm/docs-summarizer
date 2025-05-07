@@ -11,7 +11,7 @@ from src.database.models import Submission
 load_dotenv()
 
 
-def handle_task_creation(task_id, round_number, repo_url, db=None):
+def handle_task_creation(task_id, swarmBountyId, repo_url, db=None):
     """Handle task creation request."""
     try:
         if db is None:
@@ -26,9 +26,10 @@ def handle_task_creation(task_id, round_number, repo_url, db=None):
 
         result = workflow.run()
         if result.get("success"):
+            # Convert swarmBountyId to integer
             submission = Submission(
                 task_id=task_id,
-                round_number=round_number,
+                swarmBountyId=swarmBountyId,
                 status="summarized",
                 repo_url=repo_url,
                 pr_url=result["data"]["pr_url"],
@@ -50,7 +51,7 @@ if __name__ == "__main__":
     with app.app_context():
         result = handle_task_creation(
             task_id="1",
-            round_number=6,
+            swarmBountyId=1,
             repo_url="https://github.com/koii-network/builder-test",
         )
         print(result)

@@ -8,13 +8,37 @@ export function __wbg_get_message_recent_blockhash(a: number): number;
 export function __wbg_set_message_recent_blockhash(a: number, b: number): void;
 export function solana_program_init(): void;
 export function systeminstruction_createAccount(a: number, b: number, c: number, d: number, e: number): number;
-export function systeminstruction_createAccountWithSeed(a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number): number;
+export function systeminstruction_createAccountWithSeed(
+  a: number,
+  b: number,
+  c: number,
+  d: number,
+  e: number,
+  f: number,
+  g: number,
+  h: number,
+): number;
 export function systeminstruction_assign(a: number, b: number): number;
 export function systeminstruction_assignWithSeed(a: number, b: number, c: number, d: number, e: number): number;
 export function systeminstruction_transfer(a: number, b: number, c: number): number;
-export function systeminstruction_transferWithSeed(a: number, b: number, c: number, d: number, e: number, f: number, g: number): number;
+export function systeminstruction_transferWithSeed(
+  a: number,
+  b: number,
+  c: number,
+  d: number,
+  e: number,
+  f: number,
+  g: number,
+): number;
 export function systeminstruction_allocate(a: number, b: number): number;
-export function systeminstruction_allocateWithSeed(a: number, b: number, c: number, d: number, e: number, f: number): number;
+export function systeminstruction_allocateWithSeed(
+  a: number,
+  b: number,
+  c: number,
+  d: number,
+  e: number,
+  f: number,
+): number;
 export function systeminstruction_createNonceAccount(a: number, b: number, c: number, d: number): number;
 export function systeminstruction_advanceNonceAccount(a: number, b: number): number;
 export function systeminstruction_withdrawNonceAccount(a: number, b: number, c: number, d: number): number;

@@ -137,7 +137,7 @@ class repoSummarizerAuditWorkflow(Workflow):
                     "success": False,
                     "message": "Readme file check failed",
                     "data": {
-                        "recommendation": False,
+                        "is_approved": False,
                     },
                 }
             log_section("Readme file check completed")
@@ -151,7 +151,7 @@ class repoSummarizerAuditWorkflow(Workflow):
                 "success": True,
                 "message": "Readme file check completed",
                 "data": {
-                    "recommendation": recommendation == "APPROVE",
+                    "is_approved": recommendation == "APPROVE",
                 },
             }
         except Exception as e:
@@ -161,6 +161,6 @@ class repoSummarizerAuditWorkflow(Workflow):
                 "success": False,
                 "message": f"Readme file check workflow failed: {str(e)}",
                 "data": {
-                    "recommendation": False,
+                    "is_approved": False,
                 },
             }

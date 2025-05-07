@@ -21,7 +21,7 @@ def audit_submission(round_number: int):
             400,
         )
 
-    submission_round_number = submission.get("roundNumber")
+    # submission_round_number = submission.get("roundNumber")
     task_id = submission.get("taskId")
     pr_url = submission.get("prUrl")
     github_username = submission.get("githubUsername")
@@ -37,11 +37,11 @@ def audit_submission(round_number: int):
             400,
         )
     print(f"Repo owner: {repo_owner}, Repo name: {repo_name}")
-    if int(round_number) != submission_round_number:
-        return (
-            jsonify({"success": False, "data": {"error": "Round number mismatch"}}),
-            400,
-        )
+    # if int(round_number) != submission_round_number:
+    #     return (
+    #         jsonify({"success": False, "data": {"error": "Round number mismatch"}}),
+    #         400,
+    #     )
 
     if (
         not task_id
@@ -66,8 +66,13 @@ def audit_submission(round_number: int):
         return jsonify({"success": True, "data": {"is_approved": False}}), 200
 
     try:
-        is_approved = audit_repo(pr_url)
-        return jsonify({"success": True, "data": {"is_approved": is_approved}}), 200
+        result = audit_repo(pr_url)
+        return jsonify(result), 200
     except Exception as e:
         logger.error(f"Error auditing PR: {str(e)}")
-        return jsonify({"success": True, "data": {"is_approved": True}}), 200
+        return jsonify({
+            "success": False,
+            "data": {
+                "error": str(e)
+            }
+        }), 500

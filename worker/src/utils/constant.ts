@@ -3,7 +3,7 @@ dotenv.config();
 
 export const status = {
   ISSUE_SUMMARIZATION_FAILED: "Issue summarization failed",
-  ISSUE_SUCCESSFULLY_SUMMARIZED: "Issue successfully summarized",
+  // ISSUE_SUCCESSFULLY_SUMMARIZED: "Issue successfully summarized",
   NO_ISSUES_PENDING_TO_BE_SUMMARIZED: "No issues pending to be summarized",
   ROUND_LESS_THAN_OR_EQUAL_TO_1: "Round <= 1",
   NO_ORCA_CLIENT: "No orca client",
@@ -16,6 +16,8 @@ export const status = {
   NO_DATA_FOR_THIS_ROUND: "No data for this round",
   SAVING_TODO_PR_FAILED: "Summarizer todo PR not saved",
   SAVING_TODO_PR_SUCCEEDED: "Summarizer todo PR saved",
+  NOT_FINISHED_TASK: "Not finished task",
+  NO_SUBMISSION_BUT_SUBMISSION_CALLED: "No submission but submission called",
 };
 
 export const errorMessage = {
@@ -55,6 +57,6 @@ export const actionMessage = {
 export const defaultBountyMarkdownFile =
   "https://raw.githubusercontent.com/koii-network/prometheus-swarm-bounties/master/README.md";
 
-export const customReward = 400 * 10 ** 9; // This should be in ROE!
+export const customReward = 1; // This should be in ROE!
 
 export const middleServerUrl = "https://builder247-test.dev1.koii.network";

@@ -58,30 +58,11 @@ export async function routes() {
   app.post("/add-todo-pr", async (req, res) => {
     const signature = req.body.signature;
     const prUrl = req.body.prUrl;
-    const roundNumber = Number(req.body.roundNumber);
+    const swarmBountyId = req.body.swarmBountyId;
     const success = req.body.success;
     const message = req.body.message;
     console.log("[TASK] req.body", req.body);
     try {
-      if (success) {
-        await namespaceWrapper.storeSet(`result-${roundNumber}`, status.ISSUE_SUCCESSFULLY_SUMMARIZED);
-      } else {
-        await namespaceWrapper.storeSet(`result-${roundNumber}`, status.ISSUE_SUMMARIZATION_FAILED);
-        console.error("[TASK] Error summarizing repository:", message);
-        return;
-      }
-      const uuid = await namespaceWrapper.storeGet(`uuid-${roundNumber}`);
-      console.log("[TASK] uuid: ", uuid);
-      if (!uuid) {
-        throw new Error("No uuid found");
-      }
-
-      const currentRound = await namespaceWrapper.getRound();
-
-      if (roundNumber !== currentRound) {
-        throw new Error(`Invalid round number: ${roundNumber}. Current round: ${currentRound}.`);
-      }
-
       const publicKey = await namespaceWrapper.getMainAccountPubkey();
       const stakingKeypair = await namespaceWrapper.getSubmitterAccount();
       if (!stakingKeypair) {
@@ -89,6 +70,30 @@ export async function routes() {
       }
       const stakingKey = stakingKeypair.publicKey.toBase58();
       const secretKey = stakingKeypair.secretKey;
+      if (!success) {
+        const middleServerPayload = {
+          taskId: TASK_ID,
+          swarmBountyId,
+          action: "add-todo-status",
+          stakingKey,
+        };
+        const middleServerSignature = await namespaceWrapper.payloadSigning(middleServerPayload, secretKey);
+        console.error("[TASK] Error summarizing repository:", message);
+        console.log("[TASK] middleServerSignature", middleServerSignature);
+
+        const middleServerResponse = await fetch(`${middleServerUrl}/summarizer/worker/add-todo-status`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ signature: middleServerSignature, stakingKey }),
+        });
+        if (middleServerResponse.status !== 200) {
+          console.error("[TASK] Error posting to middle server:", middleServerResponse.statusText);
+          // throw new Error(`Posting to middle server failed: ${middleServerResponse.statusText}`);
+        }
+        return;
+      }
 
       if (!publicKey) {
         throw new Error("No public key found");
@@ -107,17 +112,10 @@ export async function routes() {
       if (jsonData.taskId !== TASK_ID) {
         throw new Error(`Invalid task ID from signature: ${jsonData.taskId}. Actual task ID: ${TASK_ID}`);
       }
-      if (jsonData.roundNumber !== currentRound) {
-        throw new Error(
-          `Invalid round number from signature: ${jsonData.roundNumber}. Current round: ${currentRound}.`,
-        );
-      }
-      if (jsonData.uuid !== uuid) {
-        throw new Error(`Invalid uuid from signature: ${jsonData.uuid}. Actual uuid: ${uuid}`);
-      }
+
       const middleServerPayload = {
         taskId: jsonData.taskId,
-        roundNumber,
+        swarmBountyId,
         prUrl,
         stakingKey,
         publicKey,
@@ -137,12 +135,18 @@ export async function routes() {
       if (middleServerResponse.status !== 200) {
         throw new Error(`Posting to middle server failed: ${middleServerResponse.statusText}`);
       }
-      await namespaceWrapper.storeSet(`result-${roundNumber}`, status.SAVING_TODO_PR_SUCCEEDED);
+      await namespaceWrapper.storeSet(`shouldMakeSubmission`, "true");
+      await namespaceWrapper.storeSet(`swarmBountyId`, swarmBountyId.toString());
       res.status(200).json({ result: "Successfully saved PR" });
     } catch (error) {
       console.error("[TASK] Error adding PR to summarizer todo:", error);
-      await namespaceWrapper.storeSet(`result-${roundNumber}`, status.SAVING_TODO_PR_FAILED);
+      // await namespaceWrapper.storeSet(`result-${roundNumber}`, status.SAVING_TODO_PR_FAILED);
       res.status(400).json({ error: "Failed to save PR" });
     }
   });
 }
+
+// TODO: To be completed
+app.post("/failed-task", async (req, res) => {
+  res.status(200).json({ result: "Successfully saved task result" });
+});

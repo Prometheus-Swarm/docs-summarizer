@@ -9,8 +9,11 @@ from src.server.services.repo_summary_service import logger
 bp = Blueprint("task", __name__)
 executor = ThreadPoolExecutor(max_workers=2)
 
+# Track in-progress tasks
+in_progress_tasks = set()
 
-def post_pr_url(agent_result, task_id, signature, round_number):
+
+def post_pr_url(agent_result, task_id, signature, swarmBountyId):
     try:
         result = agent_result.result()  # Get the result from the future
         logger.info(f"Result: {result}")
@@ -22,7 +25,7 @@ def post_pr_url(agent_result, task_id, signature, round_number):
             json={
                 "prUrl": result_data.get("data", {}).get("pr_url"),
                 "signature": signature,
-                "roundNumber": round_number,
+                "swarmBountyId": swarmBountyId,
                 "success": result.get("success", False),
                 "message": result_data.get("error", ""),
             },
@@ -38,19 +41,24 @@ def post_pr_url(agent_result, task_id, signature, round_number):
             logger.error(f"Traceback: {''.join(traceback.format_tb(e.__traceback__))}")
 
 
-@bp.post("/worker-task/<round_number>")
-def start_task(round_number):
+@bp.post("/worker-task")
+def start_task():
     logger = repo_summary_service.logger
-    logger.info(f"Task started for round: {round_number}")
+    # logger.info(f"Task started for bounty: {swarmBountyId}")
 
     data = request.get_json()
     task_id = data["task_id"]
     podcall_signature = data["podcall_signature"]
     repo_url = data["repo_url"]
+    swarmBountyId = data["swarmBountyId"]
     logger.info(f"Task data: {data}")
-    required_fields = ["task_id", "round_number", "repo_url", "podcall_signature"]
+    required_fields = ["task_id", "swarmBountyId", "repo_url", "podcall_signature"]
     if any(data.get(field) is None for field in required_fields):
         return jsonify({"error": "Missing data"}), 401
+
+    # Check if this swarm bounty is already being processed
+    if swarmBountyId in in_progress_tasks:
+        return jsonify({"status": "Task is already being processed"}), 200
 
     # Get db instance in the main thread where we have app context
     db = get_db()
@@ -58,22 +66,29 @@ def start_task(round_number):
     if os.getenv("TEST_MODE") == "true":
         result = repo_summary_service.handle_task_creation(
             task_id=task_id,
-            round_number=int(round_number),
+            swarmBountyId=swarmBountyId,
             repo_url=repo_url,
             db=db,  # Pass db instance
         )
         return jsonify(result)
     else:
+        # Mark this swarm bounty as in progress
+        in_progress_tasks.add(swarmBountyId)
+        
+        def cleanup_callback(future):
+            # Remove from in-progress tasks when done
+            in_progress_tasks.discard(swarmBountyId)
+            # Call the original callback
+            post_pr_url(future, task_id, podcall_signature, swarmBountyId)
+
         agent_result = executor.submit(
             repo_summary_service.handle_task_creation,
             task_id=task_id,
-            round_number=round_number,
+            swarmBountyId=swarmBountyId,
             repo_url=repo_url,
             db=db,  # Pass db instance
         )
-        agent_result.add_done_callback(
-            lambda future: post_pr_url(future, task_id, podcall_signature, round_number)
-        )
+        agent_result.add_done_callback(cleanup_callback)
         return jsonify({"status": "Task is being processed"}), 200
 
 
@@ -87,14 +102,14 @@ if __name__ == "__main__":
     # Test data
     test_data = {
         "taskId": "fake",
-        "round_number": "1",
+        "swarmBountyId": "1",
         "repo_url": "https://github.com/koii-network/docs",
     }
 
     # Set up test context
     with app.test_client() as client:
         # Make a POST request to the endpoint
-        response = client.post("/repo_summary/1", json=test_data)
+        response = client.post("/worker-task", json=test_data)
 
         # Print the response
         print(f"Status Code: {response.status_code}")

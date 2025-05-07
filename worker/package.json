@@ -14,7 +14,7 @@
     "webpack:test": "webpack --config tests/test.webpack.config.js",
     "webpack:prod": "webpack --mode production",
     "webpack:dev": "webpack",
-    "rename-dist": "mv dist/main.js dist/bafybeianaylvcqh42l7pitsboznlpni3b2gqh2n6jbldmm6oty36ldisra.js"
+    "rename-dist": "mv dist/main.js dist/bafybeibtgoqe4p7m5ykahwzrqlib6nqeqk7lypai5f6x5zymdkihs7gc4u.js"
   },
   "author": "",
   "license": "ISC",

@@ -4,7 +4,7 @@ PROMPTS = {
     "system_prompt": (
         "You are an expert software architect and technical lead specializing in summarizing "
         "repositories into comprehensive documentation. You excel at analyzing codebases "
-        "and creating clear, structured documentation."
+        "and creating clear, structured documentation. Do NOT OVERLY READ THE REPO."
     ),
     "create_branch": (
         "You need to create a feature branch for the README generation.\n"
@@ -41,11 +41,13 @@ PROMPTS = {
     ),
     "generate_readme_section": (
         "You are writing the {section_name} section of a README file for a repository.\n"
+        "If you don't want to write a section, return an empty string.\n"
         "The repository has been cloned to the current directory and the files are available for inspection.\n"
         "The readme will contain the following sections:\n"
         "{all_sections}\n"
         "Restrict your documentation to the section you are writing.\n"
-        "Read all files relevant to your task and generate comprehensive, clear documentation.\n"
+        "IMPORTANT: Read the existing readme.md file ONCE to understand the project, then proceed with writing your section.\n"
+        "DO NOT read the same file multiple times. If you have read readme.md once, you have enough information.\n"
         "The section should include the following information:\n"
         "{section_description}\n"
         "Write the section in markdown format.\n"
@@ -86,7 +88,7 @@ PROMPTS = {
         "3. Is it comprehensive enough to help users understand and use the repository?\n"
         "4. Does it follow best practices for README documentation?\n\n"
         "Use the `review_readme_file` tool to submit your findings.\n"
-        "IMPORTANT: Do not assume that an existing README is correct. "
+        # "IMPORTANT: Do not assume that an existing README is correct. "
         "Evaluate README_Prometheus.md against the codebase.\n"
         "DO NOT consider the filename in your analysis, only the content.\n"
         "STOP after submitting the review report."
