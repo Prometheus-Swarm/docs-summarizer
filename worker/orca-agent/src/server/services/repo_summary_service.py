@@ -26,6 +26,7 @@ def handle_task_creation(task_id, swarmBountyId, repo_url, db=None):
 
         result = workflow.run()
         if result.get("success"):
+            # Convert swarmBountyId to integer
             submission = Submission(
                 task_id=task_id,
                 swarmBountyId=swarmBountyId,

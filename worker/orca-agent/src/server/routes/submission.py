@@ -16,7 +16,7 @@ def fetch_submission(swarmBountyId):
     submission = (
         db.query(Submission)
         .filter(
-            Submission.swarmBountyId == int(swarmBountyId),
+            Submission.swarmBountyId == swarmBountyId,
         )
         .first()
     )

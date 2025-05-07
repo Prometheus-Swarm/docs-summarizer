@@ -10,7 +10,7 @@ class Submission(SQLModel, table=True):
     """Task submission model."""
 
     task_id: str
-    swarmBountyId: int = Field(primary_key=True)
+    swarmBountyId: str = Field(primary_key=True)
     status: str = "pending"
     pr_url: Optional[str] = None
     username: Optional[str] = None
