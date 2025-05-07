@@ -57,14 +57,16 @@ export async function task() {
 
       // check if the response is 200 after all retries
       if (!requiredWorkResponse || requiredWorkResponse.status !== 200) {
-        return;
+        // return;
+        continue;
       }
       const requiredWorkResponseData = await requiredWorkResponse.json();
       console.log("[TASK] requiredWorkResponseData: ", requiredWorkResponseData);
       // const uuid = uuidv4();
       const alreadyAssigned = await namespaceWrapper.storeGet(JSON.stringify(requiredWorkResponseData.data.id));
       if (alreadyAssigned) {
-        return;
+        continue;
+        // return;
       } else {
         await namespaceWrapper.storeSet(JSON.stringify(requiredWorkResponseData.data.id), "initialized");
       }
@@ -90,30 +92,35 @@ export async function task() {
 
         while (retryCount < maxRetries) {
           try {
-            repoSummaryResponse = await Promise.race([
-              orcaClient.podCall(`worker-task`, {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify(jsonBody),
-              }),
-              new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), timeout)),
-            ]);
+            const podcallPromise = orcaClient.podCall(`worker-task`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(jsonBody),
+            });
+
+            const timeoutPromise = new Promise((_, reject) => 
+              setTimeout(() => reject(new Error("Podcall timeout after 100 seconds")), timeout)
+            );
+
+            repoSummaryResponse = await Promise.race([podcallPromise, timeoutPromise]);
             console.log("[TASK] repoSummaryResponse: ", repoSummaryResponse);
             break; // If successful, break the retry loop
-          } catch (error) {
+          } catch (error: any) {
+            console.log(`[TASK] Podcall attempt ${retryCount + 1} failed:`, error);
             retryCount++;
             if (retryCount === maxRetries) {
-              throw error; // If we've exhausted retries, throw the error
+              throw new Error(`Podcall failed after ${maxRetries} attempts: ${error.message}`);
             }
-            console.log(`[TASK] Attempt ${retryCount} failed, retrying...`);
+            console.log(`[TASK] Retrying in 10 seconds...`);
             await new Promise((resolve) => setTimeout(resolve, 10000)); // Wait 10 seconds before retry
           }
         }
       } catch (error) {
         //   await namespaceWrapper.storeSet(`result-${roundNumber}`, status.ISSUE_SUMMARIZATION_FAILED);
         console.error("[TASK] EXECUTE TASK ERROR:", error);
+        continue;
       }
     } catch (error) {
       console.error("[TASK] EXECUTE TASK ERROR:", error);
