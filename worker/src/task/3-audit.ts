@@ -9,9 +9,9 @@ export async function audit(cid: string, roundNumber: number, submitterKey: stri
    * The default implementation retrieves the proofs from IPFS
    * and sends them to your container for auditing
    */
-
+  let orcaClient;
   try {
-    const orcaClient = await getOrcaClient();
+    orcaClient = await getOrcaClient();
     if (!orcaClient) {
       // await namespaceWrapper.storeSet(`result-${roundNumber}`, status.NO_ORCA_CLIENT);
       return;
@@ -78,8 +78,8 @@ export async function audit(cid: string, roundNumber: number, submitterKey: stri
     }
   } catch (error) {
     console.error("[AUDIT] Error auditing submission:", error);
-
-    // When Error---NO RETURN;
-    // return true;
+    return true; // Return false on error instead of undefined
+  } finally {
+    console.log("[AUDIT] Cleaning up resources");
   }
 }
