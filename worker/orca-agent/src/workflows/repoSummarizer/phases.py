@@ -19,7 +19,7 @@ class RepoClassificationPhase(WorkflowPhase):
         super().__init__(
             workflow=workflow,
             prompt_name="classify_repository",
-            available_tools=["read_file", "list_files", "classify_repository"],
+            available_tools=["read_file", "search_code", "classify_repository"],
             conversation_id=conversation_id,
             name="Repository Classification",
         )
@@ -32,7 +32,7 @@ class ReadmeSectionGenerationPhase(WorkflowPhase):
             prompt_name="generate_readme_section",
             available_tools=[
                 "read_file",
-                "list_files",
+                "search_code",
                 "create_readme_section",
             ],
             conversation_id=conversation_id,
@@ -56,7 +56,7 @@ class ReadmeReviewPhase(WorkflowPhase):
         super().__init__(
             workflow=workflow,
             prompt_name="review_readme_file",
-            available_tools=["read_file", "list_files", "review_readme_file"],
+            available_tools=["read_file", "search_code", "review_readme_file"],
             conversation_id=conversation_id,
             name="Readme Review",
         )
@@ -67,7 +67,7 @@ class CreatePullRequestPhase(WorkflowPhase):
         super().__init__(
             workflow=workflow,
             prompt_name="create_pr",
-            available_tools=["read_file", "list_files", "create_pull_request_legacy"],
+            available_tools=["read_file", "search_code", "create_pull_request_legacy"],
             conversation_id=conversation_id,
             name="Create Pull Request",
         )

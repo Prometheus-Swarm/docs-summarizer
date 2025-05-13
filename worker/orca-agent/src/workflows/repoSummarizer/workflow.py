@@ -11,12 +11,16 @@ from prometheus_swarm.workflows.utils import (
     validate_github_auth,
     setup_repository,
 )
+from kno_sdk import index_repo
+from prometheus_swarm.tools.kno_sdk_wrapper.implementations import build_tools_wrapper
 from src.workflows.repoSummarizer.prompts import PROMPTS
 from src.workflows.repoSummarizer.docs_sections import (
     DOCS_SECTIONS,
     INITIAL_SECTIONS,
     FINAL_SECTIONS,
 )
+from pathlib import Path
+
 from prometheus_swarm.tools.git_operations.implementations import commit_and_push
 
 
@@ -103,12 +107,22 @@ class RepoSummarizerWorkflow(Workflow):
 
         # Enter repo directory
         os.chdir(self.context["repo_path"])
-
+        tools_build_result = self.build_tools_setup()
+        if not tools_build_result:
+            log_error(Exception("Failed to build tools setup"), "Failed to build tools setup")
+            return {
+                "success": False,
+                "message": "Failed to build tools setup",
+                "data": None,
+            }
         # Configure Git user info
         # setup_git_user_config(self.context["repo_path"])
 
         # Get current files for context
-
+    def build_tools_setup(self):
+        index = index_repo(Path(self.context["repo_path"]))
+        tools = build_tools_wrapper(index)
+        return tools
     def cleanup(self):
         """Cleanup workspace."""
         # Make sure we're not in the repo directory before cleaning up
