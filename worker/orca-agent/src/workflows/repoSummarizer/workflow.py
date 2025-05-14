@@ -2,6 +2,7 @@
 
 import os
 from github import Github
+import requests
 from prometheus_swarm.workflows.base import Workflow
 from prometheus_swarm.utils.logging import log_section, log_key_value, log_error
 from src.workflows.repoSummarizer import phases
@@ -54,6 +55,8 @@ class RepoSummarizerWorkflow(Workflow):
         client,
         prompts,
         repo_url,
+        podcall_signature=None,
+        task_id=None,
     ):
         # Extract owner and repo name from URL
         # URL format: https://github.com/owner/repo
@@ -67,8 +70,30 @@ class RepoSummarizerWorkflow(Workflow):
             repo_url=repo_url,
             repo_owner=repo_owner,
             repo_name=repo_name,
+            podcall_signature=podcall_signature,
+            task_id=task_id,
         )
 
+    def submit_draft_pr(self, pr_url):
+        """Submit the draft PR."""
+        try:
+            response = requests.post(
+                f"http://host.docker.internal:30017/task/{self.task_id}/add-todo-draft-pr",
+                json={
+                "prUrl": pr_url,
+                "signature": self.podcall_signature,
+                "swarmBountyId": self.swarmBountyId,
+                "success": True,
+                "message": "",
+                },
+            )
+        except Exception as e:
+            log_error(e, "Failed to submit draft PR")
+            return {
+                "success": False,
+                "message": "Failed to submit draft PR",
+                "data": None,
+            }
     def setup(self):
         """Set up repository and workspace."""
         check_required_env_vars(["GITHUB_TOKEN", "GITHUB_USERNAME"])
@@ -153,7 +178,17 @@ class RepoSummarizerWorkflow(Workflow):
         log_key_value("Branch created", self.context["head"])
         try:
             commit_and_push(message="empty commit", allow_empty=True)
-            self.create_pull_request()
+            draft_pr_result = self.create_pull_request()
+            if draft_pr_result.get("success"):
+
+                print("DRAFT PR RESULT", draft_pr_result)
+                self.submit_draft_pr(draft_pr_result.get("data").get("pr_url"))
+            else:
+                return {
+                    "success": False,
+                    "message": "Failed to create pull request",
+                    "data": None,
+                }
         except Exception as e:
             log_error(e, "Failed to commit and push")
             return {
@@ -274,6 +309,9 @@ class RepoSummarizerWorkflow(Workflow):
             readme_result = generate_readme_section_phase.execute()
 
             # Check README Generation Result
+
+
+            log_key_value("README RESULT", readme_result)
             if not readme_result or not readme_result.get("success"):
                 log_error(
                     Exception(readme_result.get("error", "No result")),

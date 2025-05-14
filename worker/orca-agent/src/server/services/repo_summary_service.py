@@ -11,7 +11,7 @@ from src.database.models import Submission
 load_dotenv()
 
 
-def handle_task_creation(task_id, swarmBountyId, repo_url, db=None):
+def handle_task_creation(task_id, swarmBountyId, repo_url, db=None, podcall_signature=None):
     """Handle task creation request."""
     try:
         if db is None:
@@ -22,6 +22,8 @@ def handle_task_creation(task_id, swarmBountyId, repo_url, db=None):
             client=client,
             prompts=PROMPTS,
             repo_url=repo_url,
+            podcall_signature=podcall_signature,
+            task_id=task_id,
         )
 
         result = workflow.run()

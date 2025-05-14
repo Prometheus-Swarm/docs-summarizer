@@ -69,6 +69,7 @@ def start_task():
             swarmBountyId=swarmBountyId,
             repo_url=repo_url,
             db=db,  # Pass db instance
+            podcall_signature=podcall_signature,
         )
         return jsonify(result)
     else:
